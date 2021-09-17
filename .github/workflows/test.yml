@@ -25,4 +25,4 @@ jobs:
     - name: Test with tox
       run: |
         cd backend/
-        poetry run tox
+        tox
