@@ -1,0 +1,29 @@
+name: debuff
+
+mgmt:
+  network: clab_mgmt
+  ipv4_subnet: 172.100.100.0/24
+  ipv6_subnet: 2001:172:100:100::/80
+
+topology:
+  nodes:
+    debuff1:
+      kind: linux
+      image: local:debuff
+      mgmt_ipv4: 172.100.100.10
+      mgmt_ipv6: 2001:172:100:100::10
+    
+    host1:
+      kind: linux
+      image: local:debuff
+      mgmt_ipv4: 172.100.100.50
+      mgmt_ipv6: 2001:172:100:100::50
+    host2:
+      kind: linux
+      image: local:debuff
+      mgmt_ipv4: 172.100.100.51
+      mgmt_ipv6: 2001:172:100:100::51
+
+  links:
+    - endpoints: ["debuff1:eth1", "host1:eth1"]
+    - endpoints: ["debuff1:eth2", "host2:eth1"]
