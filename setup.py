@@ -17,74 +17,43 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import re
-import sys
-import json
-import platform
 import subprocess
-import lsb_release
 
 
-def validate_os():
-    """Exits script if invalid OS detected for Debuff install."""
-
-    # section for platform, distro, version support
-    supported_platforms = ["Linux"]
-    supported_distros = ["Ubuntu"]
-    ubuntu_min = "18"
-
-    this_platform = platform.system()
-
-    # platform check
-    if(this_platform not in supported_platforms):
-        sys.exit(f"Debuff is not supported on {this_platform}.")
-
-    os_info = lsb_release.get_distro_information()
-    os_id = os_info["ID"]
-
-    # distro check
-    if(os_id not in supported_distros):
-        sys.exit(f"Debuff has not been validated on {os_id}.")
-
-    os_release = os_info["RELEASE"]
-
-    # version check for ubuntu
-    if(os_id == supported_distros[0] and os_release < ubuntu_min):
-        sys.exit(f"Debuff minimum {os_id} version must be {ubuntu_min}.")
+def apt_update():
+    subprocess.run("apt update", shell=True)
 
 
-def set_management():
-    """Return valid interface Debuff management."""
+def install_pip():
+    check_pip = "pip --version"
+    install_pip = "apt-get install python3-pip"
+    try:
+        subprocess.check_output(check_pip, shell=True)
+        print("> pip installation check complete")
+    except subprocess.CalledProcessError:
+        print("> installing python3-pip")
+        subprocess.run(install_pip, shell=True)
+        print("> python3-pip installation complete")
 
-    # regex for ethernet/wireless devices
-    supported_ifaces = "^(wl|en)[ops]"
-    mgmt_options = []
 
-    # run shell command to view links in json
-    iface_show = "ip -br -j link show"
-    iface_list = subprocess.check_output(iface_show, shell=True)
-    iface_dict = json.loads(iface_list)
+def install_networking():
+    sysctl_conf = "/etc/sysctl.conf"
+    ipv4_fwd = "net.ipv4.ip_forward = 1"
+    ipv6_fwd = "net.ipv6.conf.all.forwarding=1"
+    subprocess.run(f"echo {ipv4_fwd} >> {sysctl_conf}", shell=True)
+    subprocess.run(f"echo {ipv6_fwd} >> {sysctl_conf}", shell=True)
+    subprocess.run("sysctl -p", shell=True)
+    subprocess.run("apt-get install bridge-utils", shell=True)
+    subprocess.run("apt-get install vlan", shell=True)
+    subprocess.run("modprobe 8021q", shell=True)
 
-    # extract and append valid interfaces
-    for iface in iface_dict:
-        if(bool(re.search(supported_ifaces, iface["ifname"]))):
-            mgmt_options.append(iface["ifname"])
 
-    if(len(mgmt_options) == 0):
-        sys.exit("A valid Ethernet or Wireless adapter was not found.")
-
-    print("Select management interface: " + str(mgmt_options))
-
-    while True:
-        mgmt_iface = input("Enter interface name: ")
-        if(mgmt_iface in mgmt_options):
-            break
-        else:
-            print(f"{mgmt_iface} is not a valid option, try again.")
-
-    return mgmt_iface
+def install_tcconfig():
+    subprocess.run("pip install tcconfig", shell=True)
 
 
 if __name__ == '__main__':
-    validate_os()
-    set_management()
+    apt_update()
+    install_pip()
+    install_networking()
+    install_tcconfig()
