@@ -51,16 +51,14 @@ def install_networking():
     # check if ipv4 forwarding is enabled
     ipv4_fwd = subprocess.check_output(ipv4_fwd_status,
                                        shell=True).decode("utf-8").rstrip()
-    if ipv4_fwd == 0:
-        subprocess.run(f"echo {ipv4_fwd_enable} >> {sysctl_conf}",
-                       shell=True, stdout=open(os.devnull, 'wb'))
+    if ipv4_fwd == "0":
+        subprocess.run(f"echo {ipv4_fwd_enable} >> {sysctl_conf}", shell=True)
 
     # check if ipv6 forwarding is enabled
     ipv6_fwd = subprocess.check_output(ipv6_fwd_status,
                                        shell=True).decode("utf-8").rstrip()
-    if ipv6_fwd == 0:
-        subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}",
-                       shell=True, stdout=open(os.devnull, 'wb'))
+    if ipv6_fwd == "0":
+        subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}", shell=True)
 
     args = [
         "sysctl -p", "apt-get install bridge-utils",
