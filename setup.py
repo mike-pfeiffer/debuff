@@ -60,6 +60,7 @@ def install_networking():
     if ipv6_fwd == "0":
         subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}", shell=True)
 
+    # load sysctl.conf, install bridge-utils & vlan, enable 802.1q
     args = [
         "sysctl -p", "apt-get install bridge-utils",
         "apt-get install vlan", "modprobe 8021q"
