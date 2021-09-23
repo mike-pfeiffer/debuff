@@ -17,39 +17,67 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import os
 import subprocess
 
 
 def apt_update():
-    subprocess.run("apt update", shell=True)
+    print("=> Starting apt update")
+    subprocess.run("apt-get update", shell=True, stdout=open(os.devnull, 'wb'))
+    print("=> Completed apt update")
 
 
 def install_pip():
+    print("=> Starting pip install")
     check_pip = "pip --version"
     install_pip = "apt-get install python3-pip"
+
     try:
         subprocess.check_output(check_pip, shell=True)
-        print("> pip installation check complete")
     except subprocess.CalledProcessError:
-        print("> installing python3-pip")
-        subprocess.run(install_pip, shell=True)
-        print("> python3-pip installation complete")
+        subprocess.run(install_pip, shell=True, stdout=open(os.devnull, 'wb'))
+
+    print("=> Completed pip install")
 
 
 def install_networking():
+    print("=> Starting networking install")
     sysctl_conf = "/etc/sysctl.conf"
-    ipv4_fwd = "net.ipv4.ip_forward = 1"
-    ipv6_fwd = "net.ipv6.conf.all.forwarding=1"
-    subprocess.run(f"echo {ipv4_fwd} >> {sysctl_conf}", shell=True)
-    subprocess.run(f"echo {ipv6_fwd} >> {sysctl_conf}", shell=True)
-    subprocess.run("sysctl -p", shell=True)
-    subprocess.run("apt-get install bridge-utils", shell=True)
-    subprocess.run("apt-get install vlan", shell=True)
-    subprocess.run("modprobe 8021q", shell=True)
+    ipv4_fwd_status = "cat /proc/sys/net/ipv4/ip_forward"
+    ipv6_fwd_status = "cat /proc/sys/net/ipv6/conf/all/forwarding"
+    ipv4_fwd_enable = "net.ipv4.ip_forward = 1"
+    ipv6_fwd_enable = "net.ipv6.conf.all.forwarding = 1"
+
+    # check if ipv4 forwarding is enabled
+    ipv4_fwd = subprocess.check_output(ipv4_fwd_status,
+                                       shell=True).decode("utf-8").rstrip()
+    if ipv4_fwd == 0:
+        subprocess.run(f"echo {ipv4_fwd_enable} >> {sysctl_conf}",
+                       shell=True, stdout=open(os.devnull, 'wb'))
+
+    # check if ipv6 forwarding is enabled
+    ipv6_fwd = subprocess.check_output(ipv6_fwd_status,
+                                       shell=True).decode("utf-8").rstrip()
+    if ipv6_fwd == 0:
+        subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}",
+                       shell=True, stdout=open(os.devnull, 'wb'))
+
+    args = [
+        "sysctl -p", "apt-get install bridge-utils",
+        "apt-get install vlan", "modprobe 8021q"
+    ]
+
+    for arg in args:
+        subprocess.run(arg, shell=True, stdout=open(os.devnull, 'wb'))
+
+    print("=> Completed networking install")
 
 
 def install_tcconfig():
-    subprocess.run("pip install tcconfig", shell=True)
+    print("=> Starting tcconfig install")
+    subprocess.run("pip install tcconfig", shell=True,
+                   stdout=open(os.devnull, 'wb'))
+    print("=> Completed tcconfig install")
 
 
 if __name__ == '__main__':
