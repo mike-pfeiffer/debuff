@@ -16,4 +16,4 @@ api = get_application()
 
 def start():
     """Launched with `poetry run start` at root level"""
-    uvicorn.run("debuff.main:api", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("debuff.main:api", host="0.0.0.0", port=8002, reload=True)
