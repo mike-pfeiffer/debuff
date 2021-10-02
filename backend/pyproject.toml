@@ -7,6 +7,9 @@ packages = [
     { include = "debuff"},
 ]
 
+[tool.poetry.scripts]
+start = "debuff.main:start"
+
 [tool.poetry.dependencies]
 fastapi = "^0.68.1"
 uvicorn = "^0.15.0"
@@ -45,7 +48,6 @@ warn_unreachable = true
 warn_unused_configs = true
 no_implicit_reexport = true
 exclude = "venv"
-
 
 [tool.black]
 line-length = 100
