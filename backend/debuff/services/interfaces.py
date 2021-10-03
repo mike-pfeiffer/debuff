@@ -17,9 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from debuff.services.parser import error_response
-from debuff.services.linux_tools import ethtool_check_ring_buffers
-from debuff.services.linux_tools import ip_addr_show_dev
-from debuff.services.linux_tools import ip_link_show_names
+from debuff.services.shell_commands import ethtool_check_ring_buffers
+from debuff.services.shell_commands import ip_addr_show_dev
+from debuff.services.shell_commands import ip_link_show_names
 
 
 def show_interface_buffers(interface: str):
