@@ -31,8 +31,8 @@ async def tc_show(interface: str):
 
 
 @router.post("/set")
-async def tc_set(interface: str, delay: int):
-    result = set_interface_impairments(interface, delay)
+async def tc_set(interface: str, delay: int, jitter: int, loss: int):
+    result = set_interface_impairments(interface, delay, jitter, loss)
     return result
 
 
