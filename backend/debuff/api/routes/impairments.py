@@ -16,17 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import json
 from fastapi import APIRouter
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from debuff.services.tcconfig import *
+from debuff.services.impairments import show_interface_impairments
 
 router = APIRouter()
 
 
 @router.get("")
 async def tc_show(interface: str):
-    result = json.loads(tcshow(interface))
-    json_result = jsonable_encoder(result)
-    return json_result
+    result = show_interface_impairments(interface)
+    return result
