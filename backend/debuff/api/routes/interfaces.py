@@ -28,3 +28,8 @@ async def get_all_iface_details():
 async def get_ether_details(interface: str):
     result = show_ether_details(interface)
     return result 
+
+@router.post("")
+async def post_ether_txqlen(interface: str, txqlen: int):
+    result = set_ether_txqlen(interface, txqlen)
+    return result 

@@ -16,15 +16,23 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import os
 import re
 import json
 import subprocess
 
 
+def set_ether_txqlen(interface: str, txqlen: int):
+    cmd = f"sudo ip link set {interface} txqueuelen {txqlen}"
+    subprocess.run(cmd, shell=True, stdout=open(os.devnull, 'wb'))
+    value = show_ether_details(interface).get("txqlen")
+    return value
+
+
 def show_ether_details(interface: str):
     details = {}
-
     suffix = "_max"
+    
     link_params = ["ifname", "mtu", "operstate", "txqlen", "address"]
     link_show = f"ip -j link show dev {interface}"
     link_output = subprocess.check_output(link_show, shell=True)
