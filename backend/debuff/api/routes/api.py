@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from fastapi import APIRouter
-from debuff.api.routes import interfaces, tcconfig
+from debuff.api.routes import interfaces, impairments
 
 router = APIRouter()
 
@@ -26,5 +26,5 @@ router.include_router(
 )
 
 router.include_router(
-    tcconfig.router, tags=["tc_show"], prefix="/tc_show"
+    impairments.router, tags=["impairments"], prefix="/impairments"
 )
