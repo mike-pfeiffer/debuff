@@ -114,7 +114,3 @@ def ethtool_check_ring_buffers(interface: str):
     details = build_details(cmd_input, cmd_output, error_msg, is_errored)
 
     return details
-
-
-if __name__ == '__main__':
-    print(ip_link_show_names())
