@@ -21,13 +21,10 @@ import json
 import subprocess
 
 
-"""
-{'ifindex': 2, 'ifname': 'enp2s0', 'flags': ['BROADCAST', 'MULTICAST', 'UP', 'LOWER_UP'], 'mtu': 1500, 'qdisc': 'mq', 'operstate': 'UP', 'linkmode': 'DEFAULT', 'group': 'default', 'txqlen': 1000, 'link_type': 'ether', 'address': '00:01:c0:24:5c:65', 'broadcast': 'ff:ff:ff:ff:ff:ff', 'vfinfo_list': []}
-"""
-
 def show_ether_details(interface: str):
     details = {}
 
+    suffix = "_max"
     link_params = ["ifname", "mtu", "operstate", "txqlen", "address"]
     link_show = f"ip -j link show dev {interface}"
     link_output = subprocess.check_output(link_show, shell=True)
@@ -40,10 +37,22 @@ def show_ether_details(interface: str):
     ethtool_show = f"ethtool -g {interface}"
     ethtool_output = subprocess.check_output(ethtool_show, shell=True)
     ethtool_detail = ethtool_output.decode().split("\n")
-    for line in ethtool_detail:
 
+    for line in ethtool_detail:
+        line = line.lower()
+        line = line.replace(":", "")
+        line = line.replace(" ", "_")
         line = re.split("\t+", line)
-        print(line)
+        
+        if "current" in line[0]:
+            suffix = "_set"
+
+        if len(line) == 2:
+            key = line[0] + suffix
+            value = line[1]
+            details[key] = value
+
+    return details
 
 
 def show_all_ether_details() -> list:
