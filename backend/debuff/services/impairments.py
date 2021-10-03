@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from debuff.services.parser import error_response
 from debuff.services.shell_commands import tcshow
 from debuff.services.shell_commands import tcdel
+from debuff.services.shell_commands import tcset
 
 
 def show_interface_impairments(interface: str):
@@ -45,5 +46,19 @@ def delete_interface_impairments(interface: str):
         return error_response(cmd_input, cmd_output, errors)
 
     payload = delete_impairments["command_output"]
+
+    return payload
+
+
+def set_interface_impairments(interface: str, delay: int = 0):
+    set_impairments = tcset(interface, delay)
+
+    if set_impairments["is_errored"]:
+        cmd_input = set_impairments["command_input"]
+        cmd_output = set_impairments["command_output"]
+        errors = set_impairments["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = set_impairments["command_output"]
 
     return payload
