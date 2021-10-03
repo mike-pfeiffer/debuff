@@ -49,7 +49,7 @@ def show_ether_details(interface: str):
 
         if len(line) == 2:
             key = line[0] + suffix
-            value = line[1]
+            value = int(line[1])
             details[key] = value
 
     return details
