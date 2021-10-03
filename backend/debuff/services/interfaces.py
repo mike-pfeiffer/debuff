@@ -16,74 +16,56 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import os
-import re
-import json
-import subprocess
 from debuff.services.parser import error_response
 from debuff.services.linux_tools import *
-#from parser import error_response
-#from linux_tools import *
 
 
-#def set_ether_txqlen(interface: str, txqlen: int):
-#    cmd_input = f"sudo ip link set {interface} txqueuelen {txqlen}"
-#    cmd_output = subprocess.check_output(cmd_input, shell=True)
-#    details = show_ether_details(interface).get("txqlen")
-#    response = response_body(cmd_input, cmd_output, details)
-#    return response
+def show_interface_buffers(interface: str):
+    """
+    """
+    ethtool_detail = ethtool_check_ring_buffers(interface)
+    if ethtool_detail["is_errored"]:
+        cmd_input = ethtool_detail["command_input"]
+        cmd_output = ethtool_detail["command_output"]
+        errors = ethtool_detail["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = {f"{interface}": ethtool_detail["command_output"]}
+
+    return payload
 
 
 def show_interface_details(interface: str):
     """
     """
-    data = {}
-    cmd_input = []
-    cmd_output = []
-    errors = []
-
     link_detail = ip_addr_show_dev(interface)
-    ethtool_detail = ethtool_check_ring_buffers(interface)
-   
-    if (link_detail["is_errored"] or ethtool_detail["is_errored"]):
-        cmd_input.append(link_detail["command_input"])
-        cmd_input.append(ethtool_detail["command_input"])
-        cmd_output.append(link_detail["command_output"])
-        cmd_output.append(ethtool_detail["command_output"])
-        errors.append(link_detail["error_message"])
-        errors.append(ethtool_detail["error_message"])
-        return error_response(cmd_input, cmd_output, errors) 
+
+    if link_detail["is_errored"]:
+        cmd_input = link_detail["command_input"]
+        cmd_output = link_detail["command_output"]
+        errors = link_detail["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
 
     ifname = link_detail["command_output"].pop("ifname")
-
-    data = {
-        **link_detail["command_output"],
-        **ethtool_detail["command_output"]
-    }
-
-    payload = {f"{ifname}": data}
+    payload = {f"{ifname}": link_detail["command_output"]}
 
     return payload
 
 
-def show_all_ether_names() -> list:
+def show_all_interface_names() -> list:
     """
     """
-    supported_ifaces = "^(eth|en[ops])"
-    exclusion = "link"
-    ethernets = []
+    iface_names = ip_link_show_names()
 
-    iface_show = "ip -br -j link show"
-    iface_list = subprocess.check_output(iface_show, shell=True)
-    iface_dict = json.loads(iface_list)
+    if iface_names["is_errored"]:
+        cmd_input = iface_names["command_input"]
+        cmd_output = iface_names["command_output"]
+        errors = iface_names["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
 
-    for iface in iface_dict:
-        if exclusion in iface:
-            continue 
-        if bool(re.search(supported_ifaces, iface["ifname"])):
-            ethernets.append(iface["ifname"])
+    payload = iface_names["command_output"]
 
-    return ethernets 
+    return payload
 
 
 if __name__ == '__main__':
