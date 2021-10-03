@@ -20,84 +20,50 @@ import os
 import re
 import json
 import subprocess
+from debuff.services.parser import error_response
+from debuff.services.linux_tools import *
+#from parser import error_response
+#from linux_tools import *
 
 
-def set_ether_txqlen(interface: str, txqlen: int):
-    cmd = f"sudo ip link set {interface} txqueuelen {txqlen}"
-    subprocess.run(cmd, shell=True, stdout=open(os.devnull, 'wb'))
-    value = show_ether_details(interface).get("txqlen")
-    return value
+#def set_ether_txqlen(interface: str, txqlen: int):
+#    cmd_input = f"sudo ip link set {interface} txqueuelen {txqlen}"
+#    cmd_output = subprocess.check_output(cmd_input, shell=True)
+#    details = show_ether_details(interface).get("txqlen")
+#    response = response_body(cmd_input, cmd_output, details)
+#    return response
 
 
-def show_ether_details(interface: str):
-    details = {}
-    suffix = "_max"
-    
-    link_params = ["ifname", "mtu", "operstate", "txqlen", "address"]
-    link_show = f"ip -j link show dev {interface}"
-    link_output = subprocess.check_output(link_show, shell=True)
-    link_detail = json.loads(link_output)[0]
-    
-    for key, value in link_detail.items():
-        if key in link_params:
-            details[key] = value
-
-    ethtool_show = f"ethtool -g {interface}"
-    ethtool_output = subprocess.check_output(ethtool_show, shell=True)
-    ethtool_detail = ethtool_output.decode().split("\n")
-
-    for line in ethtool_detail:
-        line = line.lower()
-        line = line.replace(":", "")
-        line = line.replace(" ", "_")
-        line = re.split("\t+", line)
-        
-        if "current" in line[0]:
-            suffix = "_set"
-
-        if len(line) == 2:
-            key = line[0] + suffix
-            value = int(line[1])
-            details[key] = value
-
-    return details
-
-
-def show_all_ether_details() -> list:
+def show_interface_details(interface: str):
     """
     """
-    details = []
-    ethernets = show_all_ether_names()
-    for ethernet in ethernets:
-        cmd = f"ip -j link show dev {ethernet}"
-        output = subprocess.check_output(cmd, shell=True)
-        output = json.loads(output)
-        details.append(output) 
-    return details
+    data = {}
+    cmd_input = []
+    cmd_output = []
+    errors = []
 
+    link_detail = ip_addr_show_dev(interface)
+    ethtool_detail = ethtool_check_ring_buffers(interface)
+   
+    if (link_detail["is_errored"] or ethtool_detail["is_errored"]):
+        cmd_input.append(link_detail["command_input"])
+        cmd_input.append(ethtool_detail["command_input"])
+        cmd_output.append(link_detail["command_output"])
+        cmd_output.append(ethtool_detail["command_output"])
+        errors.append(link_detail["error_message"])
+        errors.append(ethtool_detail["error_message"])
+        return error_response(cmd_input, cmd_output, errors) 
 
-def show_all_iface_details() -> list:
-    """
-    """
-    cmd = "ip -j link show"
-    output = subprocess.check_output(cmd, shell=True)
-    output = json.loads(output) 
-    return output
+    ifname = link_detail["command_output"].pop("ifname")
 
+    data = {
+        **link_detail["command_output"],
+        **ethtool_detail["command_output"]
+    }
 
-def show_all_iface_names() -> list:
-    """
-    """
-    interfaces = []
+    payload = {f"{ifname}": data}
 
-    iface_show = "ip -br -j link show"
-    iface_list = subprocess.check_output(iface_show, shell=True)
-    iface_dict = json.loads(iface_list)
-
-    for iface in iface_dict:
-        interfaces.append(iface["ifname"])
-
-    return interfaces 
+    return payload
 
 
 def show_all_ether_names() -> list:
@@ -121,4 +87,5 @@ def show_all_ether_names() -> list:
 
 
 if __name__ == '__main__':
-    show_ether_details("enp2s0")
+    #print(ethtool_check_ring_buffers("enp2s0"))
+    print(show_interface_details("enp2s0"))

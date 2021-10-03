@@ -6,30 +6,7 @@ from debuff.services.interfaces import *
 router = APIRouter()
 
 
-@router.get("/names/all")
-async def get_all_iface_names():
-    result = show_all_iface_names()
-    return result 
-
-
-@router.get("/names/ethernet")
-async def get_all_ether_names():
-    result = show_all_ether_names()
-    return result 
-
-
-@router.get("/details/all")
-async def get_all_iface_details():
-    result = show_all_iface_details()
-    return result
-
-
 @router.get("/details")
-async def get_ether_details(interface: str):
-    result = show_ether_details(interface)
-    return result 
-
-@router.post("")
-async def post_ether_txqlen(interface: str, txqlen: int):
-    result = set_ether_txqlen(interface, txqlen)
+async def get_interface_details(interface: str):
+    result = show_interface_details(interface)
     return result 
