@@ -153,8 +153,11 @@ def tcdel(interface: str):
     return details
 
 
-def tcset(interface: str, delay: int = 0):
-    cmd_input = f"sudo tcset {interface} --delay {delay}ms"
+def tcset(interface: str, delay: int, jitter: int, loss: int):
+    cmd_input = (
+        f"sudo tcset {interface} --delay {delay}ms --delay-distro {jitter}ms "
+        f"--loss {loss}"
+    )
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
