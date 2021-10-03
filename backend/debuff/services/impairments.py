@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from debuff.services.parser import error_response
 from debuff.services.shell_commands import tcshow
+from debuff.services.shell_commands import tcdel
 
 
 def show_interface_impairments(interface: str):
@@ -30,5 +31,19 @@ def show_interface_impairments(interface: str):
         return error_response(cmd_input, cmd_output, errors)
 
     payload = iface_impairments["command_output"]
+
+    return payload
+
+
+def delete_interface_impairments(interface: str):
+    delete_impairments = tcdel(interface)
+
+    if delete_impairments["is_errored"]:
+        cmd_input = delete_impairments["command_input"]
+        cmd_output = delete_impairments["command_output"]
+        errors = delete_impairments["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = delete_impairments["command_output"]
 
     return payload
