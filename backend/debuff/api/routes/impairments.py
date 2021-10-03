@@ -22,7 +22,7 @@ from debuff.services.impairments import show_interface_impairments
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/show")
 async def tc_show(interface: str):
     result = show_interface_impairments(interface)
     return result
