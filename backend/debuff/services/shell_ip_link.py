@@ -19,28 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import re
 import ast
 import json
-import subprocess
+from debuff.services.utilities import build_details, error_handling
 
 
-def build_details(cmd_input, cmd_output, error_msg, is_errored):
-    details = {
-        "command_input": cmd_input,
-        "command_output": cmd_output,
-        "error_message": error_msg,
-        "is_errored": is_errored
-    }
-    return details
-
-
-def error_handling(cmd_input: str):
-    try:
-        return subprocess.check_output(cmd_input, shell=True)
-    except subprocess.CalledProcessError as e:
-        return e
-
-
-def ip_addr_show_dev(interface: str):
-    cmd_input = f"ip -j addr show dev {interface}"
+def ip_link_show_dev(interface: str):
+    cmd_input = f"ip -j link show dev {interface}"
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
@@ -68,7 +51,7 @@ def ip_link_set_state(interface: str, state: str):
         cmd_output = None
         is_errored = True
     else:
-        cmd_output = ip_addr_show_dev(interface)["command_output"]["operstate"]
+        cmd_output = ip_link_show_dev(interface)["command_output"]["operstate"]
 
     details = build_details(cmd_input, cmd_output, error_msg, is_errored)
 
@@ -128,64 +111,6 @@ def ethtool_check_ring_buffers(interface: str):
                 new_dict[key] = value
 
         cmd_output = new_dict
-
-    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
-
-    return details
-
-
-def tcshow(interface: str):
-    cmd_input = f"tcshow {interface}"
-    cmd_output = error_handling(cmd_input)
-    error_msg = None
-    is_errored = False
-
-    if isinstance(cmd_output, Exception):
-        error_msg = cmd_output
-        cmd_output = None
-        is_errored = True
-    else:
-        cmd_output = cmd_output.decode()
-        cmd_output = json.loads(cmd_output)
-
-    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
-
-    return details
-
-
-def tcdel(interface: str):
-    cmd_input = f"sudo tcdel {interface} --all"
-    cmd_output = error_handling(cmd_input)
-    error_msg = None
-    is_errored = False
-
-    if isinstance(cmd_output, Exception):
-        error_msg = cmd_output
-        cmd_output = None
-        is_errored = True
-    else:
-        cmd_output = tcshow(interface)["command_output"]
-
-    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
-
-    return details
-
-
-def tcset(interface: str, delay: int, jitter: int, loss: int):
-    cmd_input = (
-        f"sudo tcset {interface} --delay {delay}ms --delay-distro {jitter}ms "
-        f"--loss {loss}"
-    )
-    cmd_output = error_handling(cmd_input)
-    error_msg = None
-    is_errored = False
-
-    if isinstance(cmd_output, Exception):
-        error_msg = cmd_output
-        cmd_output = None
-        is_errored = True
-    else:
-        cmd_output = tcshow(interface)["command_output"]
 
     details = build_details(cmd_input, cmd_output, error_msg, is_errored)
 

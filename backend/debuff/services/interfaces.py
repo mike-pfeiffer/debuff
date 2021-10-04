@@ -17,9 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from debuff.services.parser import error_response
-from debuff.services.shell_commands import ethtool_check_ring_buffers
-from debuff.services.shell_commands import ip_addr_show_dev
-from debuff.services.shell_commands import ip_link_show_names
+from debuff.services.shell_ethtool import ethtool_check_ring_buffers
+from debuff.services.shell_ip_link import ip_link_show_dev
+from debuff.services.shell_ip_link import ip_link_show_names
+from debuff.services.shell_ip_link import ip_link_set_state
 
 
 def show_interface_buffers(interface: str):
@@ -40,7 +41,7 @@ def show_interface_buffers(interface: str):
 def show_interface_details(interface: str):
     """
     """
-    link_detail = ip_addr_show_dev(interface)
+    link_detail = ip_link_show_dev(interface)
 
     if link_detail["is_errored"]:
         cmd_input = link_detail["command_input"]
@@ -66,5 +67,27 @@ def show_all_interface_names() -> list:
         return error_response(cmd_input, cmd_output, errors)
 
     payload = iface_names["command_output"]
+
+    return payload
+
+
+def set_interface_state(interface: str, state: str):
+    """
+    """
+    valid_states = ["up", "down"]
+    state = state.lower()
+
+    if state not in valid_states:
+        return "Invalid state. Select from [up|down]"
+
+    iface_state = ip_link_set_state(interface, state)
+
+    if iface_state["is_errored"]:
+        cmd_input = iface_state["command_input"]
+        cmd_output = iface_state["command_output"]
+        errors = iface_state["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = iface_state["command_output"]
 
     return payload
