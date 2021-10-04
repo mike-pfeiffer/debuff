@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from debuff.services.shared_utilities import error_response
-from debuff.services.shell_ethtool import ethtool_check_ring_buffers
+from debuff.services.shell_ethtool import show_ring_buffers, set_ring_buffers
 from debuff.services.shell_ip_link import ip_link_show_dev
 from debuff.services.shell_ip_link import ip_link_show_names
 from debuff.services.shell_ip_link import ip_link_set_state
@@ -26,7 +26,7 @@ from debuff.services.shell_ip_link import ip_link_set_state
 def show_interface_buffers(interface: str):
     """
     """
-    ethtool_detail = ethtool_check_ring_buffers(interface)
+    ethtool_detail = show_ring_buffers(interface)
     if ethtool_detail["is_errored"]:
         cmd_input = ethtool_detail["command_input"]
         cmd_output = ethtool_detail["command_output"]
@@ -89,5 +89,21 @@ def set_interface_state(interface: str, state: str):
         return error_response(cmd_input, cmd_output, errors)
 
     payload = iface_state["command_output"]
+
+    return payload
+
+
+def set_interface_buffers(interface: str, rx_ring: int, tx_ring: int):
+    """
+    """
+    buffer_values = set_ring_buffers(interface, rx_ring, tx_ring)
+
+    if buffer_values["is_errored"]:
+        cmd_input = buffer_values["command_input"]
+        cmd_output = buffer_values["command_output"]
+        errors = buffer_values["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = buffer_values["command_output"]
 
     return payload

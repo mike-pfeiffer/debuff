@@ -20,7 +20,8 @@ from fastapi import APIRouter
 from debuff.services.interfaces import show_interface_details
 from debuff.services.interfaces import show_interface_buffers
 from debuff.services.interfaces import show_all_interface_names
-
+from debuff.services.interfaces import set_interface_state
+from debuff.services.interfaces import set_interface_buffers
 
 router = APIRouter()
 
@@ -40,4 +41,16 @@ async def get_interface_buffers(interface: str):
 @router.get("/names")
 async def get_interface_names():
     result = show_all_interface_names()
+    return result
+
+
+@router.post("/state")
+async def post_interface_state(interface: str, state: str):
+    result = set_interface_state(interface, state)
+    return result
+
+
+@router.post("/buffers")
+async def post_interface_buffers(interface: str, rx_ring: int, tx_ring: int):
+    result = set_interface_buffers(interface, rx_ring, tx_ring)
     return result

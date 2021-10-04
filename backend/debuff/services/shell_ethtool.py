@@ -20,7 +20,25 @@ import re
 from debuff.services.shared_utilities import build_details, error_handling
 
 
-def ethtool_check_ring_buffers(interface: str):
+def set_ring_buffers(interface: str, rx_ring: int, tx_ring: int):
+    cmd_input = f"sudo ethtool -G {interface} rx {rx_ring} tx {tx_ring}"
+    cmd_output = error_handling(cmd_input)
+    error_msg = None
+    is_errored = False
+
+    if isinstance(cmd_output, Exception):
+        error_msg = cmd_output
+        cmd_output = None
+        is_errored = True
+    else:
+        cmd_output = show_ring_buffers(interface)["command_output"]
+
+    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
+
+    return details
+
+
+def show_ring_buffers(interface: str):
     cmd_input = f"ethtool -g {interface}"
     cmd_output = error_handling(cmd_input)
     error_msg = None
