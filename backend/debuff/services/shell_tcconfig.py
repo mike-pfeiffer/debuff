@@ -40,7 +40,7 @@ def tcshow(interface: str):
 
 
 def tcdel(interface: str):
-    cmd_input = f"sudo tcdel {interface} --all"
+    cmd_input = f"tcdel {interface} --all"
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
@@ -59,7 +59,7 @@ def tcdel(interface: str):
 
 def tcset(interface: str, delay: int, jitter: int, loss: int):
     cmd_input = (
-        f"sudo tcset {interface} --delay {delay}ms --delay-distro {jitter}ms "
+        f"tcset {interface} --delay {delay}ms --delay-distro {jitter}ms "
         f"--loss {loss}"
     )
     cmd_output = error_handling(cmd_input)

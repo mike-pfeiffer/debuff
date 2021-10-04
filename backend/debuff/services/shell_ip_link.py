@@ -41,7 +41,7 @@ def ip_link_show_dev(interface: str):
 
 
 def ip_link_set_state(interface: str, state: str):
-    cmd_input = f"sudo ip link set {interface} {state}"
+    cmd_input = f"ip link set {interface} {state}"
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
