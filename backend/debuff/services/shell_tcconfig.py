@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import json
-from debuff.service.utilities import build_details, error_handling
+from debuff.services.shared_utilities import build_details, error_handling
 
 
 def tcshow(interface: str):

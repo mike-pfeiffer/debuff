@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import re
-from debuff.services.utilities import build_details, error_handling
+from debuff.services.shared_utilities import build_details, error_handling
 
 
 def ethtool_check_ring_buffers(interface: str):

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import re
 import ast
 import json
-from debuff.services.utilities import build_details, error_handling
+from debuff.services.shared_utilities import build_details, error_handling
 
 
 def ip_link_show_dev(interface: str):
