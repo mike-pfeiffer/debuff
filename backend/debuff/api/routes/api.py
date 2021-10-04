@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import APIRouter
 from debuff.api.routes import interfaces, impairments
+from debuff.api.routes import addresses
 
 router = APIRouter()
 
@@ -27,4 +28,8 @@ router.include_router(
 
 router.include_router(
     impairments.router, tags=["impairments"], prefix="/impairments"
+)
+
+router.include_router(
+    addresses.router, tags=["addresses"], prefix="/addresses"
 )

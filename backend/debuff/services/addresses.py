@@ -16,23 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import json
-from debuff.services.shared_utilities import build_details, error_handling
+from debuff.services.shared_utilities import error_response
+from debuff.services.shell_ip_addr import ip_addr_show_dev
 
 
-def ip_addr_show_dev(interface: str):
-    cmd_input = f"ip -j addr show dev {interface}"
-    cmd_output = error_handling(cmd_input)
-    error_msg = None
-    is_errored = False
+def show_inet_address(interface: str):
+    """
+    """
+    details = ip_addr_show_dev(interface)
 
-    if isinstance(cmd_output, Exception):
-        error_msg = cmd_output
-        cmd_output = None
-        is_errored = True
-    else:
-        cmd_output = json.loads(cmd_output)[0]["addr_info"]
+    if details["is_errored"]:
+        cmd_input = details["command_input"]
+        cmd_output = details["command_output"]
+        errors = details["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
 
-    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
+    payload = details["command_output"]
 
-    return details
+    return payload
