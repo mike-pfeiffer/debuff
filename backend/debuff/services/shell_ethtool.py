@@ -21,7 +21,7 @@ from debuff.services.shared_utilities import build_details, error_handling
 
 
 def set_ring_buffers(interface: str, rx_ring: int, tx_ring: int):
-    cmd_input = f"ethtool -G {interface} rx {rx_ring} tx {tx_ring}"
+    cmd_input = f"sudo ethtool -G {interface} rx {rx_ring} tx {tx_ring}"
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
