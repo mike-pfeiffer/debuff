@@ -24,19 +24,19 @@ from debuff.services.addresses import delete_inet_address
 router = APIRouter()
 
 
-@router.get("/all")
-async def get_interface_ips(interface: str):
+@router.get("/show")
+async def interface_ip_show(interface: str):
     result = show_inet_address(interface)
     return result
 
 
 @router.post("/set")
-async def post_set__inet_address(interface: str, ip: str, prefix_len: int):
+async def interface_ip_set(interface: str, ip: str, prefix_len: int):
     result = set_inet_address(interface, ip, prefix_len)
     return result
 
 
 @router.post("/delete")
-async def post_delete_inet_address(interface: str, ip: str, prefix_len: int):
+async def interface_ip_delete(interface: str, ip: str, prefix_len: int):
     result = delete_inet_address(interface, ip, prefix_len)
     return result
