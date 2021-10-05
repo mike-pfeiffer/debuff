@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import APIRouter
 from debuff.services.addresses import show_inet_address
+from debuff.services.addresses import set_inet_address
+from debuff.services.addresses import delete_inet_address
 
 router = APIRouter()
 
@@ -25,4 +27,16 @@ router = APIRouter()
 @router.get("/all")
 async def get_interface_ips(interface: str):
     result = show_inet_address(interface)
+    return result
+
+
+@router.post("/set")
+async def post_set__inet_address(interface: str, ip: str, prefix_len: int):
+    result = set_inet_address(interface, ip, prefix_len)
+    return result
+
+
+@router.post("/delete")
+async def post_delete_inet_address(interface: str, ip: str, prefix_len: int):
+    result = delete_inet_address(interface, ip, prefix_len)
     return result
