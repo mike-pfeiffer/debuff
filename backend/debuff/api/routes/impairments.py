@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from typing import Optional
 from fastapi import APIRouter
 from debuff.services.impairments import show_interface_impairments
 from debuff.services.impairments import delete_interface_impairments
@@ -31,8 +32,15 @@ async def tc_show(interface: str):
 
 
 @router.post("/set")
-async def tc_set(interface: str, delay: int, jitter: int, loss: int):
-    result = set_interface_impairments(interface, delay, jitter, loss)
+async def tc_set(
+    interface: str = None,
+    direction: str = "outgoing", 
+    delay: int = 0,
+    jitter: int = 0,
+    loss: int = 0,
+    hello: str = "hello"
+):
+    result = set_interface_impairments(interface, direction, delay, jitter, loss)
     return result
 
 
