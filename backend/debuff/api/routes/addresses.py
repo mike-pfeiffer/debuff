@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from fastapi import APIRouter
-from debuff.services.addresses import show_inet_address 
+from debuff.services.addresses import show_inet_address
 
 router = APIRouter()
 
