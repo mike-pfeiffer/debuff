@@ -17,24 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from fastapi import APIRouter
-from debuff.api.routes import interfaces, impairments
-from debuff.api.routes import addresses, routing
 
 router = APIRouter()
 
-router.include_router(
-    interfaces.router, tags=["interfaces"], prefix="/interfaces"
-)
 
-router.include_router(
-    impairments.router, tags=["impairments"], prefix="/impairments"
-)
-
-router.include_router(
-    addresses.router, tags=["addresses"], prefix="/addresses"
-)
-
-
-router.include_router(
-    routing.router, tags=["routing"], prefix="/routing"
-)
+@router.get("/show")
+async def routes_show():
+    result = "TODO"
+    return result
