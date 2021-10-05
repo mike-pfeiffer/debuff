@@ -16,20 +16,30 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from fastapi import APIRouter
-from debuff.api.routes import interfaces, impairments
-from debuff.api.routes import addresses
+import subprocess
 
-router = APIRouter()
 
-router.include_router(
-    interfaces.router, tags=["interfaces"], prefix="/interfaces"
-)
+def error_response(cmd_input, cmd_output, errors):
+    response = {
+        "cmd_input": cmd_input,
+        "cmd_output": cmd_output,
+        "errors": errors
+    }
+    return response
 
-router.include_router(
-    impairments.router, tags=["impairments"], prefix="/impairments"
-)
 
-router.include_router(
-    addresses.router, tags=["addresses"], prefix="/addresses"
-)
+def build_details(cmd_input, cmd_output, error_msg, is_errored):
+    details = {
+        "command_input": cmd_input,
+        "command_output": cmd_output,
+        "error_message": error_msg,
+        "is_errored": is_errored
+    }
+    return details
+
+
+def error_handling(cmd_input: str):
+    try:
+        return subprocess.check_output(cmd_input, shell=True)
+    except subprocess.CalledProcessError as e:
+        return e

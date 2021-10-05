@@ -17,19 +17,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from fastapi import APIRouter
-from debuff.api.routes import interfaces, impairments
-from debuff.api.routes import addresses
+from debuff.services.impairments import show_interface_impairments
+from debuff.services.impairments import delete_interface_impairments
+from debuff.services.impairments import set_interface_impairments
 
 router = APIRouter()
 
-router.include_router(
-    interfaces.router, tags=["interfaces"], prefix="/interfaces"
-)
 
-router.include_router(
-    impairments.router, tags=["impairments"], prefix="/impairments"
-)
+@router.get("/show")
+async def tc_show(interface: str):
+    result = show_interface_impairments(interface)
+    return result
 
-router.include_router(
-    addresses.router, tags=["addresses"], prefix="/addresses"
-)
+
+@router.post("/set")
+async def tc_set(interface: str, delay: int, jitter: int, loss: int):
+    result = set_interface_impairments(interface, delay, jitter, loss)
+    return result
+
+
+@router.post("/delete")
+async def tc_delete(interface: str):
+    result = delete_interface_impairments(interface)
+    return result

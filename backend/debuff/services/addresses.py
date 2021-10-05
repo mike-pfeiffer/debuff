@@ -16,20 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from fastapi import APIRouter
-from debuff.api.routes import interfaces, impairments
-from debuff.api.routes import addresses
+from debuff.services.shared_utilities import error_response
+from debuff.services.shell_ip_addr import ip_addr_show_dev
 
-router = APIRouter()
 
-router.include_router(
-    interfaces.router, tags=["interfaces"], prefix="/interfaces"
-)
+def show_inet_address(interface: str):
+    """
+    """
+    details = ip_addr_show_dev(interface)
 
-router.include_router(
-    impairments.router, tags=["impairments"], prefix="/impairments"
-)
+    if details["is_errored"]:
+        cmd_input = details["command_input"]
+        cmd_output = details["command_output"]
+        errors = details["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
 
-router.include_router(
-    addresses.router, tags=["addresses"], prefix="/addresses"
-)
+    payload = details["command_output"]
+
+    return payload
