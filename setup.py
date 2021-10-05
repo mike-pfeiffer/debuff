@@ -95,6 +95,10 @@ def set_permissions():
         "echo $USER ALL=NOPASSWD: /usr/sbin/ethtool | sudo EDITOR='tee -a' visudo",
         shell=True, stdout=open(os.devnull, 'wb')
     )
+    subprocess.run(
+        "sudo setcap cap_net_raw,cap_net_admin+ep /usr/bin/ip",
+        shell=True, stdout=open(os.devnull, 'wb')
+    )
     print("=> Completed setting permissions")
 
 
