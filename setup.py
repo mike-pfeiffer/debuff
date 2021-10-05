@@ -91,6 +91,10 @@ def set_permissions():
         "echo $USER ALL=NOPASSWD: /usr/sbin/tc | sudo EDITOR='tee -a' visudo",
         shell=True, stdout=open(os.devnull, 'wb')
     )
+    subprocess.run(
+        "echo $USER ALL=NOPASSWD: /usr/sbin/ethtool | sudo EDITOR='tee -a' visudo",
+        shell=True, stdout=open(os.devnull, 'wb')
+    )
     print("=> Completed setting permissions")
 
 
