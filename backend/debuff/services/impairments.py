@@ -17,9 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from debuff.services.shared_utilities import error_response
-from debuff.services.shell_tcconfig import tcshow
-from debuff.services.shell_tcconfig import tcdel
-from debuff.services.shell_tcconfig import tcset
+from debuff.services.shell_tcconfig import tcdel, tcset, tcshow
 
 
 def show_interface_impairments(interface: str):
@@ -51,7 +49,7 @@ def delete_interface_impairments(interface: str):
 
 
 def set_interface_impairments(
-    interface: str, direction: str, delay: int, jitter: int, loss: int
+    interface: str, direction: str, delay: float, jitter: float, loss: float
 ):
     set_impairments = tcset(interface, direction, delay, jitter, loss)
 
