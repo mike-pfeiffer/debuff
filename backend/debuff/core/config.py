@@ -8,5 +8,4 @@ config = Config(".env")
 
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 
-PROJECT_NAME: str = config("Debuff", default="FastApi Project")
-
+PROJECT_NAME: str = config("Debuff", default="Debuff")

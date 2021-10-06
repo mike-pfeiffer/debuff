@@ -18,6 +18,40 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from debuff.services.shared_utilities import error_response
 from debuff.services.shell_ip_addr import ip_addr_show_dev
+from debuff.services.shell_ip_addr import ip_addr_add_dev
+from debuff.services.shell_ip_addr import ip_addr_del_dev
+
+
+def set_inet_address(interface: str, ip: str, prefix_len: int):
+    """
+    """
+    details = ip_addr_add_dev(interface, ip, prefix_len)
+
+    if details["is_errored"]:
+        cmd_input = details["command_input"]
+        cmd_output = details["command_output"]
+        errors = details["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = details["command_output"]
+
+    return payload
+
+
+def delete_inet_address(interface: str, ip: str, prefix_len: int):
+    """
+    """
+    details = ip_addr_del_dev(interface, ip, prefix_len)
+
+    if details["is_errored"]:
+        cmd_input = details["command_input"]
+        cmd_output = details["command_output"]
+        errors = details["error_message"]
+        return error_response(cmd_input, cmd_output, errors)
+
+    payload = details["command_output"]
+
+    return payload
 
 
 def show_inet_address(interface: str):

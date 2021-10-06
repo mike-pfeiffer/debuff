@@ -31,8 +31,28 @@ async def tc_show(interface: str):
 
 
 @router.post("/set")
-async def tc_set(interface: str, delay: int, jitter: int, loss: int):
-    result = set_interface_impairments(interface, delay, jitter, loss)
+async def tc_set(
+    interface: str = None,
+    direction: str = "outgoing",
+    delay: int = 0,
+    jitter: int = 0,
+    loss: int = 0
+):
+    if direction == "bidirectional":
+        split_delay = delay / 2
+        split_jitter = jitter / 2
+        split_loss = loss / 2
+        set_interface_impairments(
+            interface, "outgoing", split_delay, split_jitter, split_loss
+        )
+        set_interface_impairments(
+            interface, "incoming", split_delay, split_jitter, split_loss
+        )
+        result = show_interface_impairments(interface)
+    else:
+        result = set_interface_impairments(
+            interface, direction, delay, jitter, loss
+        )
     return result
 
 

@@ -17,26 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from fastapi import APIRouter
-from debuff.services.addresses import show_inet_address
-from debuff.services.addresses import set_inet_address
-from debuff.services.addresses import delete_inet_address
 
 router = APIRouter()
 
 
 @router.get("/show")
-async def interface_ip_show(interface: str):
-    result = show_inet_address(interface)
-    return result
-
-
-@router.post("/set")
-async def interface_ip_set(interface: str, ip: str, prefix_len: int):
-    result = set_inet_address(interface, ip, prefix_len)
-    return result
-
-
-@router.post("/delete")
-async def interface_ip_delete(interface: str, ip: str, prefix_len: int):
-    result = delete_inet_address(interface, ip, prefix_len)
+async def routes_show():
+    result = "TODO"
     return result

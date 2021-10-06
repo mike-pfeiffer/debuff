@@ -51,9 +51,9 @@ def delete_interface_impairments(interface: str):
 
 
 def set_interface_impairments(
-    interface: str, delay: int, jitter: int, loss: int
+    interface: str, direction: str, delay: int, jitter: int, loss: int
 ):
-    set_impairments = tcset(interface, delay, jitter, loss)
+    set_impairments = tcset(interface, direction, delay, jitter, loss)
 
     if set_impairments["is_errored"]:
         cmd_input = set_impairments["command_input"]
