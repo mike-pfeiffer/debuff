@@ -16,18 +16,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from enum import Enum
+
+from debuff.services.interfaces import (
+    set_interface_buffers,
+    set_interface_state,
+    show_all_interface_names,
+    show_interface_buffers,
+    show_interface_details,
+)
 from fastapi import APIRouter
-from debuff.services.interfaces import show_interface_details
-from debuff.services.interfaces import show_interface_buffers
-from debuff.services.interfaces import show_all_interface_names
-from debuff.services.interfaces import set_interface_state
-from debuff.services.interfaces import set_interface_buffers
 
 router = APIRouter()
 
 
+custom_enum_values = {x: x for x in show_all_interface_names()}
+
+
+class TempEnum(str, Enum):
+    pass
+
+
+TypeEnum = TempEnum("TypeEnum", custom_enum_values)
+
+
 @router.get("/details")
-async def get_interface_details(interface: str):
+async def get_interface_details(interface: TypeEnum):
     result = show_interface_details(interface)
     return result
 
