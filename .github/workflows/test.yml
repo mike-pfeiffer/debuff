@@ -26,7 +26,3 @@ jobs:
       run: |
         cd backend/
         tox
-    - name: pytest
-      run: |
-        pip install pytest,pytest-cov
-        pytest
