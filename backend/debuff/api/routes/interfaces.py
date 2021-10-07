@@ -16,8 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from enum import Enum
-
+from debuff.models.enums import InterfaceEnum, InterfaceStateEnum
 from debuff.services.interfaces import (
     set_interface_buffers,
     set_interface_state,
@@ -30,24 +29,14 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-custom_enum_values = {x: x for x in show_all_interface_names()}
-
-
-class TempEnum(str, Enum):
-    pass
-
-
-TypeEnum = TempEnum("TypeEnum", custom_enum_values)
-
-
 @router.get("/details")
-async def get_interface_details(interface: TypeEnum):
+async def get_interface_details(interface: InterfaceEnum):
     result = show_interface_details(interface)
     return result
 
 
 @router.get("/buffers")
-async def get_interface_buffers(interface: str):
+async def get_interface_buffers(interface: InterfaceEnum):
     result = show_interface_buffers(interface)
     return result
 
@@ -59,12 +48,12 @@ async def get_interface_names():
 
 
 @router.post("/state")
-async def post_interface_state(interface: str, state: str):
+async def post_interface_state(interface: InterfaceEnum, state: InterfaceStateEnum):
     result = set_interface_state(interface, state)
     return result
 
 
 @router.post("/buffers")
-async def post_interface_buffers(interface: str, rx_ring: int, tx_ring: int):
+async def post_interface_buffers(interface: InterfaceEnum, rx_ring: int, tx_ring: int):
     result = set_interface_buffers(interface, rx_ring, tx_ring)
     return result
