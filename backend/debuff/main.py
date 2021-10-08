@@ -16,16 +16,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import uvicorn
-
-from debuff.core.config import API_PREFIX, DEBUG, VERSION, PROJECT_NAME
 from debuff.api.routes.api import router as api_router
+from debuff.core.config import API_PREFIX, DEBUG, PROJECT_NAME, VERSION
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def get_application() -> FastAPI:
     application = FastAPI(title=PROJECT_NAME, debug=DEBUG, version=VERSION)
 
     application.include_router(api_router, prefix=API_PREFIX)
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     return application
 
