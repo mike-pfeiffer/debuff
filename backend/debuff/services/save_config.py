@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import os
 import re
 
 import yaml
@@ -60,9 +61,6 @@ def parse_addr_info(addr_info: list):
     addr_list = []
 
     for addr in addr_info:
-        if "dynamic" in addr:
-            # TODO
-            print("hi")
         ip = addr["local"]
         prefix = addr["prefixlen"]
         address = f"{ip}/{prefix}"
@@ -206,12 +204,25 @@ def create_netplan():
             ethernet_dict = create_ethernet_dict(interface, routes)
             netplan[KEY_NETWORK][KEY_ETHERNETS][ifname] = ethernet_dict
 
-    print(yaml.dump(netplan))
+    return yaml.dump(netplan)
 
 
-def write_save_file():
-    return "TODO"
+def write_save_file(data):
+    netplan_path = "/etc/netplan/"
+    netplan_file = netplan_path + "debuff.yaml"
+    existing_files = os.listdir(netplan_path)
+
+    if existing_files:
+        for existing in existing_files:
+            old_netplan = netplan_path + existing
+            if os.path.isfile(old_netplan):
+                os.remove(old_netplan)
+
+    with open(netplan_file, "w") as f:
+        data = create_netplan()
+        f.write(data)
 
 
 if __name__ == "__main__":
-    create_netplan()
+    data = create_netplan()
+    write_save_file(data)
