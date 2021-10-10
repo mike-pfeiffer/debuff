@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import json
+
 from debuff.services.shared_utilities import build_details, error_handling
 
 
@@ -57,7 +58,7 @@ def tcdel(interface: str):
     return details
 
 
-def tcset(interface: str, direction: str, delay: int, jitter: int, loss: int):
+def tcset(interface: str, direction: str, delay: float, jitter: float, loss: float):
     cmd_input = (
         f"tcset {interface} --direction {direction} --delay {delay}ms "
         f"--delay-distro {jitter}ms --loss {loss}"

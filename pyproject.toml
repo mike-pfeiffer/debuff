@@ -25,6 +25,7 @@ isort = "^5.9.3"
 pytest-cov = "^2.12.1"
 tox-gh-actions = "^2.7.0"
 pre-commit = "^2.15.0"
+requests = "^2.26.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -69,4 +70,4 @@ pylint = ["+F*", "+E*", "-E0611", "-E1101", "-E0401", "-E1102", "-E1123"]
 [tool.isort]
 profile = "black"
 multi_line_output = 3
-known_third_party = ["debuff", "fastapi", "starlette", "uvicorn"]
+known_third_party = ["debuff", "fastapi", "pydantic", "pytest", "starlette", "uvicorn"]
