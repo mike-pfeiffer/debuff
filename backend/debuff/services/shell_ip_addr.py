@@ -16,8 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import json
 import ipaddress
+import json
+
 from debuff.services.shared_utilities import build_details, error_handling
 
 
@@ -54,10 +55,7 @@ def ip_addr_add_dev(interface: str, ip: str, prefix_len: int):
         if is_ipv4 and addrs["family"] == "inet":
             ip_addr_del_dev(interface, addrs["local"], addrs["prefixlen"])
             break
-        if (
-            is_ipv6 and addrs["family"] == "inet6" and addrs["scope"] ==
-            "global"
-        ):
+        if is_ipv6 and addrs["family"] == "inet6" and addrs["scope"] == "global":
             ip_addr_del_dev(interface, addrs["local"], addrs["prefixlen"])
             break
 
@@ -90,6 +88,24 @@ def ip_addr_show_dev(interface: str):
         is_errored = True
     else:
         cmd_output = json.loads(cmd_output)[0]["addr_info"]
+
+    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
+
+    return details
+
+
+def ip_addr_show_all():
+    cmd_input = "ip -json -details address show"
+    cmd_output = error_handling(cmd_input)
+    error_msg = None
+    is_errored = False
+
+    if isinstance(cmd_output, Exception):
+        error_msg = cmd_output
+        cmd_output = None
+        is_errored = True
+    else:
+        cmd_output = json.loads(cmd_output)
 
     details = build_details(cmd_input, cmd_output, error_msg, is_errored)
 
