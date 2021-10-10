@@ -76,7 +76,10 @@ def parse_routes(ifname: str, routes: list) -> list:
 
     for route in routes:
         if "gateway" in route and ifname == route["dev"]:
-            route_dict = {"to": route["dst"], "via": route["gateway"]}
+            if route["dst"] == "default":
+                route_dict = {"to": "0.0.0.0/0", "via": route["gateway"]}
+            else:
+                route_dict = {"to": route["dst"], "via": route["gateway"]}
             routes_list.append(route_dict)
 
     return routes_list
