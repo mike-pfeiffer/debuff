@@ -16,14 +16,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import ipaddress
 import re
 
 import yaml
 from debuff.services.shell_ethtool import show_ring_buffers
-from debuff.services.shell_ip_addr import ip_addr_show_all, ip_addr_show_dev
-from debuff.services.shell_ip_link import ip_link_show_dev, ip_link_show_names
+from debuff.services.shell_ip_addr import ip_addr_show_all
+from debuff.services.shell_ip_link import ip_link_show_names
 from debuff.services.shell_ip_route import ip_route_show
+
+KEY_ID = "id"
+KEY_NETWORK = "network"
+KEY_BRIDGES = "bridges"
+KEY_VLANS = "vlans"
+KEY_ETHERNETS = "ethernets"
+KEY_IFNAME = "ifname"
+KEY_LINKINFO = "linkinfo"
+KEY_LINK_TYPE = "link_type"
+KEY_INFO_KIND = "info_kind"
+KEY_INFO_DATA = "info_data"
+KEY_ADDR_INFO = "addr_info"
 
 
 def save_ethtool_settings():
@@ -45,71 +56,12 @@ def save_ethtool_settings():
         print(save_settings)
 
 
-def save_link_settings():
-    interfaces = ip_link_show_names()["command_output"]
-    for interface in interfaces:
-        details = ip_link_show_dev(interface)["command_output"]
-        if "txqlen" in details:
-            tx = details["txqlen"]
-            save_settings = f"ip link add dev {interface} txqueuelen {tx}"
-            # TODO
-            print(save_settings)
-
-
-def save_ip_settings():
-    interfaces = ip_link_show_names()["command_output"]
-
-    for interface in interfaces:
-        details = ip_addr_show_dev(interface)["command_output"]
-
-        # interface with no address information
-        if not details:
-            continue
-
-        # classify address as v4 or v6 for further testing
-        for addr in details:
-            family = addr["family"]
-            net_addr = addr["local"]
-            prefix = addr["prefixlen"]
-
-            if family == "inet":
-                ip_addr = ipaddress.IPv4Address(net_addr)
-            elif family == "inet6":
-                ip_addr = ipaddress.IPv6Address(net_addr)
-            else:
-                return 1
-
-            test_is_loopback = ip_addr.is_loopback
-            test_is_link_local = ip_addr.is_link_local
-            test_is_multicast = ip_addr.is_multicast
-            test_version = ip_addr.version
-
-            if test_is_loopback or test_is_multicast:
-                continue
-
-            if test_is_link_local and test_version == 6:
-                continue
-
-            # TODO
-            print(f"ip address add {ip_addr}/{prefix} dev {interface}")
-
-
-def save_route_settings():
-    routes = ip_route_show()["command_output"]
-
-    for route in routes:
-        if "gateway" in route:
-            dst = route["dst"]
-            gw = route["gateway"]
-            # TODO
-            print(f"ip route add {dst} via {gw}")
-
-
 def parse_addr_info(addr_info: list):
     addr_list = []
 
     for addr in addr_info:
         if "dynamic" in addr:
+            # TODO
             print("hi")
         ip = addr["local"]
         prefix = addr["prefixlen"]
@@ -130,89 +82,126 @@ def parse_routes(ifname: str, routes: list) -> list:
     return routes_list
 
 
+def create_ethernet_dict(interface, routes):
+    """
+    Extract the interface name and parse the IPv4/IPv6 address(es), if any,
+    for the interface.
+    """
+    ethernet_dict = {}
+    ifname = interface[KEY_IFNAME]
+    addr_info = interface[KEY_ADDR_INFO]
+    addresses = parse_addr_info(addr_info)
+    link_routes = parse_routes(ifname, routes)
+
+    if addresses:
+        ethernet_dict["addresses"] = addresses
+
+    if link_routes:
+        ethernet_dict["routes"] = link_routes
+
+    return ethernet_dict
+
+
+def create_bridge_dict(interface, routes):
+    """
+    Extract the interface name and parse the IPv4/IPv6 address(es), if any,
+    for the interface.
+    """
+    bridge_dict = {}
+    ifname = interface[KEY_IFNAME]
+    addr_info = interface[KEY_ADDR_INFO]
+    addresses = parse_addr_info(addr_info)
+    link_routes = parse_routes(ifname, routes)
+
+    if addresses:
+        bridge_dict["addresses"] = addresses
+
+    if link_routes:
+        bridge_dict["routes"] = link_routes
+
+    return bridge_dict
+
+
+def create_vlan_dict(interface, routes):
+    """
+    Extract the interface name and parse the IPv4/IPv6 address(es), if any,
+    for the interface.
+    """
+    vlan_dict = {}
+    ifname = interface[KEY_IFNAME]
+    addr_info = interface[KEY_ADDR_INFO]
+    addresses = parse_addr_info(addr_info)
+    linkinfo = interface[KEY_LINKINFO]
+    info_data = linkinfo[KEY_INFO_DATA]
+    link_routes = parse_routes(ifname, routes)
+    vid = info_data[KEY_ID]
+    parent = interface["link"]
+    vlan_dict["id"] = vid
+    vlan_dict["link"] = parent
+
+    if addresses:
+        vlan_dict["addresses"] = addresses
+
+    if link_routes:
+        vlan_dict["routes"] = link_routes
+
+    return vlan_dict
+
+
 def create_netplan():
-    netplan = {"network": {"version": 2}}
-
-    key_id = "id"
-    key_linkinfo = "linkinfo"
-    key_link_type = "link_type"
-    key_info_kind = "info_kind"
-    key_info_data = "info_data"
-
+    netplan = {KEY_NETWORK: {"version": 2}}
     allowed_link_type = ["ether"]
-
     routes = ip_route_show()["command_output"]
     interfaces = ip_addr_show_all()["command_output"]
 
     for interface in interfaces:
-        # need to add a docker network check to ignore
+        link_type = interface[KEY_LINK_TYPE]
 
-        link_type = interface[key_link_type]
-
+        """
+        The 'loopback' interface is not currently supported in this release and
+        only the 'ether' type is permitted.
+        """
         if link_type not in allowed_link_type:
             continue
 
-        ifname = interface["ifname"]
-        addr_info = interface["addr_info"]
-        addresses = parse_addr_info(addr_info)
+        ifname = interface[KEY_IFNAME]
 
-        if key_linkinfo in interface:
-            linkinfo = interface[key_linkinfo]
-            info_kind = linkinfo[key_info_kind]
-            info_data = linkinfo[key_info_data]
+        """
+        The 'linkinfo' key is present in the command output for bridge and VLAN
+        interface(s).
+        """
+        if KEY_LINKINFO in interface:
+
+            """
+            To determine VLAN or bridge a nested dict needs to be parsed from
+            output. Example: "linkinfo": {"info_kind": "bridge"}.
+            """
+            linkinfo = interface[KEY_LINKINFO]
+            info_kind = linkinfo[KEY_INFO_KIND]
 
             if info_kind == "bridge":
-                my_routes = parse_routes(ifname, routes)
-                parent = interface["interfaces"]
 
-                link_dict = {"interfaces": parent}
+                if KEY_BRIDGES not in netplan[KEY_NETWORK]:
+                    netplan[KEY_NETWORK][KEY_BRIDGES] = {}
 
-                if "bridges" not in netplan["network"]:
-                    netplan["network"]["bridges"] = {}
-
-                if addresses:
-                    link_dict["addresses"] = addresses
-
-                if my_routes:
-                    link_dict["routes"] = my_routes
-
-                netplan["network"]["bridges"][ifname] = link_dict
+                bridge_dict = create_bridge_dict(interface, routes)
+                netplan[KEY_NETWORK][KEY_BRIDGES][ifname] = bridge_dict
 
             elif info_kind == "vlan":
-                my_routes = parse_routes(ifname, routes)
-                vid = info_data[key_id]
-                parent = interface["link"]
 
-                link_dict = {"id": vid, "link": parent}
+                if KEY_VLANS not in netplan[KEY_NETWORK]:
+                    netplan[KEY_NETWORK][KEY_VLANS] = {}
 
-                if "vlans" not in netplan["network"]:
-                    netplan["network"]["vlans"] = {}
+                vlan_dict = create_vlan_dict(interface, routes)
+                netplan[KEY_NETWORK][KEY_VLANS][ifname] = vlan_dict
 
-                if addresses:
-                    link_dict["addresses"] = addresses
-
-                if my_routes:
-                    link_dict["routes"] = my_routes
-
-                netplan["network"]["vlans"][ifname] = link_dict
-
-            else:
-                continue
         else:
-            my_routes = parse_routes(ifname, routes)
 
-            link_dict = {}
+            if KEY_ETHERNETS not in netplan[KEY_NETWORK]:
+                netplan[KEY_NETWORK][KEY_ETHERNETS] = {}
 
-            if "ethernets" not in netplan["network"]:
-                netplan["network"]["ethernets"] = {}
-
-            if addresses:
-                link_dict["addresses"] = addresses
-
-            if my_routes:
-                link_dict["routes"] = my_routes
-
-            netplan["network"]["ethernets"][ifname] = link_dict
+            ethernet_dict = create_ethernet_dict(interface, routes)
+            netplan[KEY_NETWORK][KEY_ETHERNETS][ifname] = ethernet_dict
 
     print(yaml.dump(netplan))
 
