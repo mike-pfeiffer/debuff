@@ -105,10 +105,12 @@ def save_route_settings():
             print(f"ip route add {dst} via {gw}")
 
 
-def parse_addr_info(addr_info: list) -> list:
+def parse_addr_info(addr_info: list):
     addr_list = []
 
     for addr in addr_info:
+        if "dynamic" in addr:
+            print("hi")
         ip = addr["local"]
         prefix = addr["prefixlen"]
         address = f"{ip}/{prefix}"
@@ -128,7 +130,7 @@ def parse_routes(ifname: str, routes: list) -> list:
     return routes_list
 
 
-def save_netplan():
+def create_netplan():
     netplan = {"network": {"version": 2}}
 
     key_id = "id"
@@ -160,10 +162,40 @@ def save_netplan():
             info_data = linkinfo[key_info_data]
 
             if info_kind == "bridge":
-                pass
+                my_routes = parse_routes(ifname, routes)
+                parent = interface["interfaces"]
+
+                link_dict = {"interfaces": parent}
+
+                if "bridges" not in netplan["network"]:
+                    netplan["network"]["bridges"] = {}
+
+                if addresses:
+                    link_dict["addresses"] = addresses
+
+                if my_routes:
+                    link_dict["routes"] = my_routes
+
+                netplan["network"]["bridges"][ifname] = link_dict
+
             elif info_kind == "vlan":
+                my_routes = parse_routes(ifname, routes)
                 vid = info_data[key_id]
-                print(vid)
+                parent = interface["link"]
+
+                link_dict = {"id": vid, "link": parent}
+
+                if "vlans" not in netplan["network"]:
+                    netplan["network"]["vlans"] = {}
+
+                if addresses:
+                    link_dict["addresses"] = addresses
+
+                if my_routes:
+                    link_dict["routes"] = my_routes
+
+                netplan["network"]["vlans"][ifname] = link_dict
+
             else:
                 continue
         else:
@@ -190,4 +222,4 @@ def write_save_file():
 
 
 if __name__ == "__main__":
-    save_netplan()
+    create_netplan()
