@@ -19,8 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import ipaddress
 import re
 
+import yaml
 from debuff.services.shell_ethtool import show_ring_buffers
-from debuff.services.shell_ip_addr import ip_addr_show_dev
+from debuff.services.shell_ip_addr import ip_addr_show_all, ip_addr_show_dev
 from debuff.services.shell_ip_link import ip_link_show_dev, ip_link_show_names
 from debuff.services.shell_ip_route import ip_route_show
 
@@ -44,13 +45,13 @@ def save_ethtool_settings():
         print(save_settings)
 
 
-def save_txqlen_settings():
+def save_link_settings():
     interfaces = ip_link_show_names()["command_output"]
     for interface in interfaces:
         details = ip_link_show_dev(interface)["command_output"]
         if "txqlen" in details:
             tx = details["txqlen"]
-            save_settings = f"ip link set dev {interface} txqueuelen {tx}"
+            save_settings = f"ip link add dev {interface} txqueuelen {tx}"
             # TODO
             print(save_settings)
 
@@ -104,12 +105,89 @@ def save_route_settings():
             print(f"ip route add {dst} via {gw}")
 
 
+def parse_addr_info(addr_info: list) -> list:
+    addr_list = []
+
+    for addr in addr_info:
+        ip = addr["local"]
+        prefix = addr["prefixlen"]
+        address = f"{ip}/{prefix}"
+        addr_list.append(address)
+
+    return addr_list
+
+
+def parse_routes(ifname: str, routes: list) -> list:
+    routes_list = []
+
+    for route in routes:
+        if "gateway" in route and ifname == route["dev"]:
+            route_dict = {"to": route["dst"], "via": route["gateway"]}
+            routes_list.append(route_dict)
+
+    return routes_list
+
+
+def save_netplan():
+    netplan = {"network": {"version": 2}}
+
+    key_id = "id"
+    key_linkinfo = "linkinfo"
+    key_link_type = "link_type"
+    key_info_kind = "info_kind"
+    key_info_data = "info_data"
+
+    allowed_link_type = ["ether"]
+
+    routes = ip_route_show()["command_output"]
+    interfaces = ip_addr_show_all()["command_output"]
+
+    for interface in interfaces:
+        # need to add a docker network check to ignore
+
+        link_type = interface[key_link_type]
+
+        if link_type not in allowed_link_type:
+            continue
+
+        ifname = interface["ifname"]
+        addr_info = interface["addr_info"]
+        addresses = parse_addr_info(addr_info)
+
+        if key_linkinfo in interface:
+            linkinfo = interface[key_linkinfo]
+            info_kind = linkinfo[key_info_kind]
+            info_data = linkinfo[key_info_data]
+
+            if info_kind == "bridge":
+                pass
+            elif info_kind == "vlan":
+                vid = info_data[key_id]
+                print(vid)
+            else:
+                continue
+        else:
+            my_routes = parse_routes(ifname, routes)
+
+            link_dict = {}
+
+            if "ethernets" not in netplan["network"]:
+                netplan["network"]["ethernets"] = {}
+
+            if addresses:
+                link_dict["addresses"] = addresses
+
+            if my_routes:
+                link_dict["routes"] = my_routes
+
+            netplan["network"]["ethernets"][ifname] = link_dict
+
+    print(yaml.dump(netplan))
+
+
 def write_save_file():
     return "TODO"
 
 
 if __name__ == "__main__":
-    save_ethtool_settings()
-    save_txqlen_settings()
-    save_ip_settings()
-    save_route_settings()
+    save_netplan()
