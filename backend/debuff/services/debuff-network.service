@@ -1,0 +1,12 @@
+[Unit]
+Description=Debuff Boot Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=root
+ExecStart=/home/mike/development/debuff/backend/debuff/services/boot_settings.sh
+
+[Install]
+WantedBy=multi-user.target
