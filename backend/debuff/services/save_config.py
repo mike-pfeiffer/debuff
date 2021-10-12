@@ -20,6 +20,7 @@ import os
 import re
 
 import yaml
+from debuff.services.shared_utilities import error_handling
 from debuff.services.shell_ethtool import show_ring_buffers
 from debuff.services.shell_ip_addr import ip_addr_show_all
 from debuff.services.shell_ip_link import ip_link_show_names
@@ -36,25 +37,6 @@ KEY_LINK_TYPE = "link_type"
 KEY_INFO_KIND = "info_kind"
 KEY_INFO_DATA = "info_data"
 KEY_ADDR_INFO = "addr_info"
-
-
-def save_ethtool_settings():
-    ethernets = []
-    allowed_pnids = "^en[ops][0-9][a-z]?[0-9]?$"
-    interfaces = ip_link_show_names()["command_output"]
-
-    for interface in interfaces:
-        is_ethernet = bool(re.search(allowed_pnids, interface))
-        if is_ethernet:
-            ethernets.append(interface)
-
-    for ethernet in ethernets:
-        ring_settings = show_ring_buffers(ethernet)["command_output"]
-        rx = ring_settings["rx_ring_set"]
-        tx = ring_settings["tx_ring_set"]
-        save_settings = f"ethtool -G {ethernet} rx {rx} tx {tx}"
-        # TODO
-        print(save_settings)
 
 
 def parse_addr_info(addr_info: list):
@@ -81,6 +63,27 @@ def parse_routes(ifname: str, routes: list) -> list:
             routes_list.append(route_dict)
 
     return routes_list
+
+
+def extract_ethtool_settings():
+    ethernets = []
+    ethtool_settings = []
+    allowed_pnids = "^en[ops][0-9][a-z]?[0-9]?$"
+    interfaces = ip_link_show_names()["command_output"]
+
+    for interface in interfaces:
+        is_ethernet = bool(re.search(allowed_pnids, interface))
+        if is_ethernet:
+            ethernets.append(interface)
+
+    for ethernet in ethernets:
+        ring_settings = show_ring_buffers(ethernet)["command_output"]
+        rx = ring_settings["rx_ring_set"]
+        tx = ring_settings["tx_ring_set"]
+        save_settings = f"ethtool -G {ethernet} rx {rx} tx {tx}"
+        ethtool_settings.append(save_settings)
+
+    return ethtool_settings
 
 
 def create_ethernet_dict(interface, routes):
@@ -207,7 +210,7 @@ def create_netplan():
     return yaml.dump(netplan)
 
 
-def write_save_file(data):
+def write_netplan_file(data):
     netplan_path = "/etc/netplan/"
     netplan_file = netplan_path + "debuff.yaml"
     existing_files = os.listdir(netplan_path)
@@ -223,6 +226,36 @@ def write_save_file(data):
         f.write(data)
 
 
+def write_boot_file():
+    boot_file = "boot_settings.sh"
+    ring_settings = extract_ethtool_settings()
+
+    with open(boot_file, "w") as f:
+        data = "#!/bin/bash"
+
+        for ring in ring_settings:
+            data += f"\n{ring}"
+
+        f.write(data)
+
+
+def write_service_file():
+    service_path = "/etc/systemd/system/"
+    service_file = "debuff-network.service"
+    filename = service_path + service_file
+
+    if not os.path.isfile(filename):
+        cmd_copy = f"cp {service_file} {filename}"
+        cmd_reload = "systemctl daemon-reload"
+        cmd_enable = f"systemctl enable {service_file}"
+
+        os.system(cmd_copy)
+        error_handling(cmd_reload)
+        error_handling(cmd_enable)
+
+
 if __name__ == "__main__":
     data = create_netplan()
-    write_save_file(data)
+    write_netplan_file(data)
+    write_boot_file()
+    write_service_file()
