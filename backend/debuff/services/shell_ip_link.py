@@ -16,9 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import re
 import ast
 import json
+
 from debuff.services.shared_utilities import build_details, error_handling
 
 
@@ -59,7 +59,7 @@ def ip_link_set_state(interface: str, state: str):
 
 
 def ip_link_show_names():
-    cmd_input = f"ip -j link show"
+    cmd_input = "ip -j link show"
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
@@ -74,43 +74,6 @@ def ip_link_show_names():
         for interface in cmd_output:
             new_list.append(interface["ifname"])
         cmd_output = new_list
-
-    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
-
-    return details
-
-
-def ethtool_check_ring_buffers(interface: str):
-    cmd_input = f"ethtool -g {interface}"
-    cmd_output = error_handling(cmd_input)
-    error_msg = None
-    is_errored = False
-
-    if isinstance(cmd_output, Exception):
-        error_msg = cmd_output
-        cmd_output = None
-        is_errored = True
-    else:
-        new_dict = {}
-        suffix = "_ring_max"
-
-        cmd_output = cmd_output.decode().split("\n")
-
-        for line in cmd_output:
-            line = line.lower()
-            line = line.replace(":", "")
-            line = line.replace(" ", "_")
-            line = re.split("\t+", line)
-
-            if "current" in line[0]:
-                suffix = "_ring_set"
-
-            if len(line) == 2:
-                key = line[0] + suffix
-                value = int(line[1])
-                new_dict[key] = value
-
-        cmd_output = new_dict
 
     details = build_details(cmd_input, cmd_output, error_msg, is_errored)
 
