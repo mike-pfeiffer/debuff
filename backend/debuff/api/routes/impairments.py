@@ -16,10 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from debuff.models.TcModel import TcSetValues
+from debuff.services.impairments import (
+    delete_interface_impairments,
+    set_interface_impairments,
+    show_interface_impairments,
+)
 from fastapi import APIRouter
-from debuff.services.impairments import show_interface_impairments
-from debuff.services.impairments import delete_interface_impairments
-from debuff.services.impairments import set_interface_impairments
 
 router = APIRouter()
 
@@ -31,27 +34,25 @@ async def tc_show(interface: str):
 
 
 @router.post("/set")
-async def tc_set(
-    interface: str = None,
-    direction: str = "outgoing",
-    delay: int = 0,
-    jitter: int = 0,
-    loss: int = 0
-):
-    if direction == "bidirectional":
-        split_delay = delay / 2
-        split_jitter = jitter / 2
-        split_loss = loss / 2
+async def tc_set(tcset_values: TcSetValues):
+    if tcset_values.direction == "bidirectional":
+        split_delay = tcset_values.delay / 2
+        split_jitter = tcset_values.jitter / 2
+        split_loss = tcset_values.loss / 2
         set_interface_impairments(
-            interface, "outgoing", split_delay, split_jitter, split_loss
+            tcset_values.interface, "outgoing", split_delay, split_jitter, split_loss
         )
         set_interface_impairments(
-            interface, "incoming", split_delay, split_jitter, split_loss
+            tcset_values.interface, "incoming", split_delay, split_jitter, split_loss
         )
-        result = show_interface_impairments(interface)
+        result = show_interface_impairments(tcset_values.interface)
     else:
         result = set_interface_impairments(
-            interface, direction, delay, jitter, loss
+            tcset_values.interface,
+            tcset_values.direction,
+            tcset_values.delay,
+            tcset_values.jitter,
+            tcset_values.loss,
         )
     return result
 
