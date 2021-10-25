@@ -74,10 +74,10 @@ export default {
 .rows {
   padding: 2em;
 }
-.test {
-  align-items: flex-start;
-  justify-content: left;
-  left: 1px;
-  text-align: right;
-}
+/*.test {*/
+/*  align-items: flex-start;*/
+/*  justify-content: left;*/
+/*  left: 1px;*/
+/*  text-align: right;*/
+/*}*/
 </style>
