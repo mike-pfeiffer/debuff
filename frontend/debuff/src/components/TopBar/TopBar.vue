@@ -1,12 +1,13 @@
 <template>
   <v-app-bar
       app
-      color="#CDCDCD"
+      color="#202327"
       dark
+      clipped-left
   >
     <v-img
         class="mx-2"
-        :src="require('@/assets/debuff icon.png')"
+        :src="require('@/assets/debuff icon(white).png')"
         max-height="200"
         max-width="175"
         contain

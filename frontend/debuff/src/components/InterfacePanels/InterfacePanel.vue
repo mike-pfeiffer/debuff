@@ -35,41 +35,37 @@ export default {
   created() {
     console.log("Yay!")
     axios.get('http://192.168.200.10:8002/api/interfaces/names')
-    .then(res => {
-      const interfaces = []
-      for (const x of res.data) {
-        const interface_data = {
-          'name':"",
-          'color':""
-
-        }
-        axios.get('http://192.168.200.10:8002/api/interfaces/details?interface=' + x)
         .then(res => {
-          interface_data.name = x
-          switch(res.data[x]['operstate']) {
-            case "UP": {
-              interface_data.color = 'green';
-              break;
+          const interfaces = []
+          for (const x of res.data) {
+            const interface_data = {
+              'name':"",
+              'color':""
             }
-            case "DOWN": {
-              interface_data.color = 'red';
-              break;
-            }
-            default: {
-              interface_data.color = 'gray';
-              break;
-            }
+            axios.get('http://192.168.200.10:8002/api/interfaces/details?interface=' + x)
+                .then(res => {
+                  interface_data.name = x
+                  switch(res.data[x]['operstate']) {
+                    case "UP": {
+                      interface_data.color = 'green';
+                      break;
+                    }
+                    case "DOWN": {
+                      interface_data.color = 'red';
+                      break;
+                    }
+                    default: {
+                      interface_data.color = 'gray';
+                      break;
+                    }
+                  }
+                  interfaces.push(interface_data)
+                })
+            this.interfaces = interfaces
+            console.log(interfaces)
           }
-
-          interfaces.push(interface_data)
         })
-        this.interfaces = interfaces
-        console.log(interfaces)
-
-
-      }
-    })
-    .catch(error => console.log(error))
+        .catch(error => console.log(error))
   }
 }
 </script>
