@@ -13,7 +13,7 @@
             </div>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
-            Rock!!
+            <InterfaceImpairmentForm />
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -23,9 +23,11 @@
 
 <script>
 import axios from "axios";
+import InterfaceImpairmentForm from "@/components/InterfacePanels/InterfaceImpairmentForm";
 
 export default {
   name: "InterfacePanel",
+  components: {InterfaceImpairmentForm},
   data () {
     return {
       interfaces: [{}]
