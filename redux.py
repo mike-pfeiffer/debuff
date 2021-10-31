@@ -23,6 +23,7 @@ import subprocess
 
 import yaml
 
+VLANS = "vlans"
 NETWORK = "network"
 ETHERNETS = "ethernets"
 
@@ -73,6 +74,7 @@ def setup_interfaces():
     service_file = "50-ifup-hooks"
     filename = service_path + service_file
     data = "#!/bin/bash"
+    txqueuelen = "2500"
 
     with open(filename, "w") as f:
 
@@ -80,6 +82,7 @@ def setup_interfaces():
             ethernets = netplan[ETHERNETS]
 
             for iface in ethernets.keys():
+                # Set ring buffers to max to avoid packet drops.
                 maximum = get_ring_buffers(iface)["Pre-set maximums"]
                 max_rx = maximum["RX"]
                 max_rx_mini = maximum["RX Mini"]
@@ -90,6 +93,18 @@ def setup_interfaces():
                     f"rx-jumbo {max_rx_jumbo} tx {max_tx}"
                 )
                 data += f"\n{rings}"
+
+                # Increase standard 1000 txqueuelen to avoid overflow drops.
+                queuelen = f"ip link set txqueuelen {txqueuelen} dev {iface}"
+                data += f"\n{queuelen}"
+
+        if VLANS in netplan:
+            vlans = netplan[VLANS]
+
+            for iface in vlans.keys():
+                # Increase standard 1000 txqueuelen to avoid overflow drops.
+                queuelen = f"ip link set txqueuelen {txqueuelen} dev {iface}"
+                data += f"\n{queuelen}"
 
         # Add a newline to EOF and write the settings out to the file.
         data += "\n"
@@ -143,7 +158,9 @@ def install_pip():
 
 def install_networking():
     print("=> Starting networking install")
+
     # load sysctl.conf, install bridge-utils & vlan, enable 802.1q
+    print("... installing networking utilities")
     args = [
         "sysctl -p",
         "sudo apt-get install bridge-utils",
@@ -154,6 +171,10 @@ def install_networking():
     for arg in args:
         subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
 
+    print("... activating ipv4, ipv6 forwarding")
+    setup_routing()
+
+    print("... optimizing interface buffers, txqueues")
     setup_routing()
 
     print("=> Completed networking install")
@@ -167,9 +188,14 @@ def install_tcconfig():
     print("=> Completed tcconfig install")
 
 
+def install_debuff():
+    # TODO
+    return None
+
+
 if __name__ == "__main__":
-    # apt_update()
-    # install_pip()
-    # install_networking()
-    # install_tcconfig()
-    setup_interfaces()
+    apt_update()
+    install_pip()
+    install_networking()
+    install_tcconfig()
+    install_debuff()
