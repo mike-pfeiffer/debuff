@@ -193,24 +193,9 @@ def install_debuff():
     print("^ Starting debuff install")
 
     directory = os.getcwd()
-    service_file = "debuff.service"
-    service_file_contents = (
-        f"[Unit]\n",
-        f"Description=Debuff\n",
-        f"After=network.target\n",
-        f"StartLimitIntervalSec=0\n\n",
-        f"[Service]\n",
-        f"Type=simple\n",
-        f"User=root\n",
-        f"ExecStart={directory}/boot.sh\n\n",
-        f"[Install]\n",
-        f"WantedBy=multi-user.target\n"
-    )
-    boot_file = "boot.sh"
-    boot_file_contents = (
-        f"poetry run start",
-        f"npm run serve --prefix {directory}/frontend/debuff/\n"
-    )
+    service_path = "/etc/systemd/system/"
+    boot_files = ["boot_backend.sh", "boot_frontend.sh"]
+    service_files = ["debuff_backend.service", "debuff_frontend.service"]
 
     args = [
         "poetry install",
@@ -223,68 +208,98 @@ def install_debuff():
     #    subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
 
     print("+ creating startup files")
-    with open(boot_file, "w") as f:
-        data = "#!/bin/bash"
 
-        for content in boot_file_contents:
-            data += f"\n{content}"
+    # Write the boot file for the backend.
+    with open(boot_files[0], "w") as f:
+        content = (
+            "#!/bin/bash\n",
+            f"cd {directory}\n",
+            f"poetry run start\n"
+        )
 
-        f.write(data)
+        for line in content:
+            f.write(line)
 
-    with open(service_file, "w") as f:
-        for content in service_file_contents:
-            f.write(content)
+    # Write the boot file for the front.
+    with open(boot_files[1], "w") as f:
+        content = (
+            "#!/bin/bash\n",
+            f"npm run serve --prefix {directory}/frontend/debuff/\n"
+        )
 
-    print("+ setting permissions on startup files")
-    # Equivalent of chmod 644 on the service file.
-    st = os.stat(service_file)
-    os.chmod(
-        service_file,
-        st.st_mode |
-        stat.S_IRUSR |
-        stat.S_IWUSR |
-        stat.S_IRGRP |
-        stat.S_IWGRP |
-        stat.S_IROTH
-    )
+        for line in content:
+            f.write(line)
 
-    # Equivalent of chmod 744 on the boot file.
-    st = os.stat(service_file)
-    os.chmod(
-        boot_file,
-        st.st_mode |
-        stat.S_IRUSR |
-        stat.S_IWUSR |
-        stat.S_IXUSR |
-        stat.S_IRGRP |
-        stat.S_IWGRP |
-        stat.S_IXGRP |
-        stat.S_IROTH
-    )
+    for service_file in service_files:
+        if service_file == service_files[0]:
+            boot_file = boot_files[0]
 
-    print("+ finalizing startup settings")
-    service_path = "/etc/systemd/system/"
-    filename = service_path + service_file
-    cmd_copy = f"cp {service_file} {filename}"
-    os.system(cmd_copy)
+        if service_file == service_files[1]:
+            boot_file = boot_files[1]
 
-    args = [
-        "systemctl daemon-reload",
-        f"systemctl enable {service_file}",
-        f"systemctl start {service_file}"
-    ]
+        service_contents = (
+            f"[Unit]\n",
+            f"Description=Debuff\n",
+            f"After=network.target\n",
+            f"StartLimitIntervalSec=0\n\n",
+            f"[Service]\n",
+            f"Type=simple\n",
+            f"User=root\n",
+            f"ExecStart={directory}/{boot_file}\n\n",
+            f"[Install]\n",
+            f"WantedBy=multi-user.target\n"
+        )
+        with open(service_file, "w") as f:
+            for content in service_contents:
+                f.write(content)
 
-    for arg in args:
-        try:
-            return subprocess.check_output(arg, shell=True)
-        except subprocess.CalledProcessError as e:
-            return e
+        # Equivalent of chmod 644 on the service file.
+        st = os.stat(service_file)
+        os.chmod(
+            service_file,
+            st.st_mode |
+            stat.S_IRUSR |
+            stat.S_IWUSR |
+            stat.S_IRGRP |
+            stat.S_IWGRP |
+            stat.S_IROTH
+        )
+
+        # Equivalent of chmod 744 on the boot file.
+        st = os.stat(boot_file)
+        os.chmod(
+            boot_file,
+            st.st_mode |
+            stat.S_IRUSR |
+            stat.S_IWUSR |
+            stat.S_IXUSR |
+            stat.S_IRGRP |
+            stat.S_IWGRP |
+            stat.S_IXGRP |
+            stat.S_IROTH
+        )
+
+        filename = service_path + service_file
+        cmd_copy = f"cp {service_file} {filename}"
+        os.system(cmd_copy)
+
+        args = [
+            "systemctl daemon-reload",
+            f"systemctl enable {service_file}",
+            f"systemctl start {service_file}"
+        ]
+
+        for arg in args:
+            try:
+                subprocess.check_output(arg, shell=True)
+            except subprocess.CalledProcessError as e:
+                print(e)
     print("$ Completed debuff install")
 
 
 if __name__ == "__main__":
-    # apt_update()
-    # install_pip()
-    # install_networking()
-    # install_requirements()
+    apt_update()
+    install_pip()
+    install_networking()
+    install_requirements()
     install_debuff()
