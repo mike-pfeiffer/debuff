@@ -204,8 +204,8 @@ def install_debuff():
     ]
 
     print("+ setting up poetry and npm")
-    # for arg in args:
-    #    subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
+    for arg in args:
+        subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
 
     print("+ creating startup files")
 
