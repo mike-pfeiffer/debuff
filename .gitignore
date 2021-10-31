@@ -1,5 +1,10 @@
 .idea
 
+# locally significant
+boot_backend.sh
+boot_frontend.sh
+debuff_backend.service
+debuff_frontend.service
 
 #poetry
 poetry.lock
