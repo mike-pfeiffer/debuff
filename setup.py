@@ -142,14 +142,14 @@ def setup_routing():
 
 def apt_update():
     print("=^ Starting apt update")
-    subprocess.run("sudo apt-get update", shell=True, stdout=open(os.devnull, "wb"))
+    subprocess.run("apt-get update", shell=True, stdout=open(os.devnull, "wb"))
     print("=$ Completed apt update")
 
 
 def install_pip():
     print("=^ Starting pip install")
     check_pip = "pip --version"
-    install_pip = "sudo apt-get install python3-pip"
+    install_pip = "apt-get install python3-pip"
 
     try:
         subprocess.check_output(check_pip, shell=True)
@@ -165,8 +165,8 @@ def install_networking():
     # load sysctl.conf, install bridge-utils & vlan, enable 802.1q
     print(".. installing networking utilities")
     args = [
-        "sudo apt-get install bridge-utils",
-        "sudo apt-get install vlan",
+        "apt-get install bridge-utils",
+        "apt-get install vlan",
         "modprobe 8021q",
     ]
 
@@ -177,7 +177,7 @@ def install_networking():
     setup_routing()
 
     print(".. optimizing interface buffers, txqueues")
-    setup_routing()
+    setup_interfaces()
 
     print("=$ Completed networking install")
 
@@ -185,7 +185,7 @@ def install_networking():
 def install_tcconfig():
     print("=^ Starting tcconfig install")
     subprocess.run(
-        "sudo pip install tcconfig", shell=True, stdout=open(os.devnull, "wb")
+        "pip install tcconfig", shell=True, stdout=open(os.devnull, "wb")
     )
     print("=$ Completed tcconfig install")
 
