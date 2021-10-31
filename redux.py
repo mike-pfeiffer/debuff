@@ -18,12 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import os
+import stat
 import subprocess
 
 import yaml
 
-VLANS = "vlans"
-BRIDGES = "bridges"
 NETWORK = "network"
 ETHERNETS = "ethernets"
 
@@ -37,13 +36,14 @@ def get_netplan():
 
 
 def get_ring_buffers(iface: str):
-    ring_buffers = {}
-    temp_key = ""
-    temp_dict = {}
     cmd = f"ethtool -g {iface}"
     output = subprocess.check_output(cmd, shell=True)
     output = output.decode("utf-8")
     output = output.split("\n")
+
+    ring_buffers = {}
+    temp_key = ""
+    temp_dict = {}
 
     # The first line is not needed the returned dictionary.
     for entry in output[1:]:
@@ -59,25 +59,67 @@ def get_ring_buffers(iface: str):
             temp_dict = {}
             ring_buffers[temp_key] = temp_dict
             continue
+
         # Builds the nested dictionary of ring parameter values.
-        else:
-            value = entry[1].strip("\t")
-            temp_dict[entry[0]] = value
+        value = entry[1].strip("\t")
+        temp_dict[entry[0]] = value
 
     return ring_buffers
 
 
-def redux():
+def setup_interfaces():
     netplan = get_netplan()
+    service_path = "/etc/networkd-dispatcher/routable.d/"
+    service_file = "50-ifup-hooks"
+    filename = service_path + service_file
+    data = "#!/bin/bash"
 
-    if ETHERNETS in netplan:
-        print(ETHERNETS)
+    with open(filename, "w") as f:
 
-    if BRIDGES in netplan:
-        print(BRIDGES)
+        if ETHERNETS in netplan:
+            ethernets = netplan[ETHERNETS]
 
-    if VLANS in netplan:
-        print(VLANS)
+            for iface in ethernets.keys():
+                maximum = get_ring_buffers(iface)["Pre-set maximums"]
+                max_rx = maximum["RX"]
+                max_rx_mini = maximum["RX Mini"]
+                max_rx_jumbo = maximum["RX Jumbo"]
+                max_tx = maximum["TX"]
+                rings = (
+                    f"ethtool -G {iface} rx {max_rx} rx-mini {max_rx_mini} "
+                    f"rx-jumbo {max_rx_jumbo} tx {max_tx}"
+                )
+                data += f"\n{rings}"
+
+        # Add a newline to EOF and write the settings out to the file.
+        data += "\n"
+        f.write(data)
+
+    # Make file executable so that it runs on boot.
+    st = os.stat(filename)
+    os.chmod(filename, st.st_mode | stat.S_IEXEC)
+
+
+def setup_routing():
+    sysctl_conf = "/etc/sysctl.conf"
+    ipv4_fwd_status = "cat /proc/sys/net/ipv4/ip_forward"
+    ipv6_fwd_status = "cat /proc/sys/net/ipv6/conf/all/forwarding"
+    ipv4_fwd_enable = "net.ipv4.ip_forward = 1"
+    ipv6_fwd_enable = "net.ipv6.conf.all.forwarding = 1"
+
+    # check if ipv4 forwarding is enabled
+    ipv4_fwd = (
+        subprocess.check_output(ipv4_fwd_status, shell=True).decode("utf-8").rstrip()
+    )
+    if ipv4_fwd == "0":
+        subprocess.run(f"echo {ipv4_fwd_enable} >> {sysctl_conf}", shell=True)
+
+    # check if ipv6 forwarding is enabled
+    ipv6_fwd = (
+        subprocess.check_output(ipv6_fwd_status, shell=True).decode("utf-8").rstrip()
+    )
+    if ipv6_fwd == "0":
+        subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}", shell=True)
 
 
 def apt_update():
@@ -101,26 +143,6 @@ def install_pip():
 
 def install_networking():
     print("=> Starting networking install")
-    sysctl_conf = "/etc/sysctl.conf"
-    ipv4_fwd_status = "cat /proc/sys/net/ipv4/ip_forward"
-    ipv6_fwd_status = "cat /proc/sys/net/ipv6/conf/all/forwarding"
-    ipv4_fwd_enable = "net.ipv4.ip_forward = 1"
-    ipv6_fwd_enable = "net.ipv6.conf.all.forwarding = 1"
-
-    # check if ipv4 forwarding is enabled
-    ipv4_fwd = (
-        subprocess.check_output(ipv4_fwd_status, shell=True).decode("utf-8").rstrip()
-    )
-    if ipv4_fwd == "0":
-        subprocess.run(f"echo {ipv4_fwd_enable} >> {sysctl_conf}", shell=True)
-
-    # check if ipv6 forwarding is enabled
-    ipv6_fwd = (
-        subprocess.check_output(ipv6_fwd_status, shell=True).decode("utf-8").rstrip()
-    )
-    if ipv6_fwd == "0":
-        subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}", shell=True)
-
     # load sysctl.conf, install bridge-utils & vlan, enable 802.1q
     args = [
         "sysctl -p",
@@ -131,6 +153,8 @@ def install_networking():
 
     for arg in args:
         subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
+
+    setup_routing()
 
     print("=> Completed networking install")
 
@@ -144,9 +168,8 @@ def install_tcconfig():
 
 
 if __name__ == "__main__":
-    apt_update()
-    install_pip()
-    install_networking()
-    install_tcconfig()
-    redux()
-    print(get_ring_buffers("eno1"))
+    # apt_update()
+    # install_pip()
+    # install_networking()
+    # install_tcconfig()
+    setup_interfaces()
