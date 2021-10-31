@@ -1,5 +1,8 @@
 .idea
 
+# locally significant
+boot.sh
+debuff.service
 
 #poetry
 poetry.lock
