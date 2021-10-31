@@ -19,9 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import stat
-import subprocess
-
 import yaml
+import subprocess
 
 VLANS = "vlans"
 NETWORK = "network"
@@ -141,13 +140,13 @@ def setup_routing():
 
 
 def apt_update():
-    print("=^ Starting apt update")
+    print("^ Starting apt update")
     subprocess.run("apt-get update", shell=True, stdout=open(os.devnull, "wb"))
-    print("=$ Completed apt update")
+    print("$ Completed apt update")
 
 
 def install_pip():
-    print("=^ Starting pip install")
+    print("^ Starting pip install")
     check_pip = "pip --version"
     install_pip = "apt-get install python3-pip"
 
@@ -156,14 +155,14 @@ def install_pip():
     except subprocess.CalledProcessError:
         subprocess.run(install_pip, shell=True, stdout=open(os.devnull, "wb"))
 
-    print("=$ Completed pip install")
+    print("$ Completed pip install")
 
 
 def install_networking():
-    print("=^ Starting networking install")
+    print("^ Starting networking install")
 
     # load sysctl.conf, install bridge-utils & vlan, enable 802.1q
-    print(".. installing networking utilities")
+    print("+ installing networking utilities")
     args = [
         "apt-get install bridge-utils",
         "apt-get install vlan",
@@ -173,31 +172,119 @@ def install_networking():
     for arg in args:
         subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
 
-    print(".. activating ipv4, ipv6 forwarding")
+    print("+ activating ipv4, ipv6 forwarding")
     setup_routing()
 
-    print(".. optimizing interface buffers, txqueues")
+    print("+ optimizing interface buffers, txqueues")
     setup_interfaces()
 
-    print("=$ Completed networking install")
+    print("$ Completed networking install")
 
 
-def install_tcconfig():
-    print("=^ Starting tcconfig install")
+def install_requirements():
+    print("^ Starting python requirements install")
     subprocess.run(
-        "pip install tcconfig", shell=True, stdout=open(os.devnull, "wb")
+        "pip install -r requirements.txt", shell=True, stdout=open(os.devnull, "wb")
     )
-    print("=$ Completed tcconfig install")
+    print("$ Completed python requirements install")
 
 
 def install_debuff():
-    # TODO
-    return None
+    print("^ Starting debuff install")
+
+    directory = os.getcwd()
+    service_file = "debuff.service"
+    service_file_contents = (
+        f"[Unit]\n",
+        f"Description=Debuff\n",
+        f"After=network.target\n",
+        f"StartLimitIntervalSec=0\n\n",
+        f"[Service]\n",
+        f"Type=simple\n",
+        f"User=root\n",
+        f"ExecStart={directory}/boot.sh\n\n",
+        f"[Install]\n",
+        f"WantedBy=multi-user.target\n"
+    )
+    boot_file = "boot.sh"
+    boot_file_contents = (
+        f"poetry run start",
+        f"npm run serve --prefix {directory}/frontend/debuff/\n"
+    )
+
+    args = [
+        "poetry install",
+        "apt-get install npm",
+        f"npm install --prefix {directory}/frontend/debuff/"
+    ]
+
+    print("+ setting up poetry and npm")
+    # for arg in args:
+    #    subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
+
+    print("+ creating startup files")
+    with open(boot_file, "w") as f:
+        data = "#!/bin/bash"
+
+        for content in boot_file_contents:
+            data += f"\n{content}"
+
+        f.write(data)
+
+    with open(service_file, "w") as f:
+        for content in service_file_contents:
+            f.write(content)
+
+    print("+ setting permissions on startup files")
+    # Equivalent of chmod 644 on the service file.
+    st = os.stat(service_file)
+    os.chmod(
+        service_file,
+        st.st_mode |
+        stat.S_IRUSR |
+        stat.S_IWUSR |
+        stat.S_IRGRP |
+        stat.S_IWGRP |
+        stat.S_IROTH
+    )
+
+    # Equivalent of chmod 744 on the boot file.
+    st = os.stat(service_file)
+    os.chmod(
+        boot_file,
+        st.st_mode |
+        stat.S_IRUSR |
+        stat.S_IWUSR |
+        stat.S_IXUSR |
+        stat.S_IRGRP |
+        stat.S_IWGRP |
+        stat.S_IXGRP |
+        stat.S_IROTH
+    )
+
+    print("+ finalizing startup settings")
+    service_path = "/etc/systemd/system/"
+    filename = service_path + service_file
+    cmd_copy = f"cp {service_file} {filename}"
+    os.system(cmd_copy)
+
+    args = [
+        "systemctl daemon-reload",
+        f"systemctl enable {service_file}",
+        f"systemctl start {service_file}"
+    ]
+
+    for arg in args:
+        try:
+            return subprocess.check_output(arg, shell=True)
+        except subprocess.CalledProcessError as e:
+            return e
+    print("$ Completed debuff install")
 
 
 if __name__ == "__main__":
-    apt_update()
-    install_pip()
-    install_networking()
-    install_tcconfig()
+    # apt_update()
+    # install_pip()
+    # install_networking()
+    # install_requirements()
     install_debuff()
