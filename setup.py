@@ -136,15 +136,18 @@ def setup_routing():
     if ipv6_fwd == "0":
         subprocess.run(f"echo {ipv6_fwd_enable} >> {sysctl_conf}", shell=True)
 
+    arg = "sysctl -p"
+    subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
+
 
 def apt_update():
-    print("=> Starting apt update")
+    print("=^ Starting apt update")
     subprocess.run("sudo apt-get update", shell=True, stdout=open(os.devnull, "wb"))
-    print("=> Completed apt update")
+    print("=$ Completed apt update")
 
 
 def install_pip():
-    print("=> Starting pip install")
+    print("=^ Starting pip install")
     check_pip = "pip --version"
     install_pip = "sudo apt-get install python3-pip"
 
@@ -153,16 +156,15 @@ def install_pip():
     except subprocess.CalledProcessError:
         subprocess.run(install_pip, shell=True, stdout=open(os.devnull, "wb"))
 
-    print("=> Completed pip install")
+    print("=$ Completed pip install")
 
 
 def install_networking():
-    print("=> Starting networking install")
+    print("=^ Starting networking install")
 
     # load sysctl.conf, install bridge-utils & vlan, enable 802.1q
-    print("... installing networking utilities")
+    print(".. installing networking utilities")
     args = [
-        "sysctl -p",
         "sudo apt-get install bridge-utils",
         "sudo apt-get install vlan",
         "modprobe 8021q",
@@ -171,21 +173,21 @@ def install_networking():
     for arg in args:
         subprocess.run(arg, shell=True, stdout=open(os.devnull, "wb"))
 
-    print("... activating ipv4, ipv6 forwarding")
+    print(".. activating ipv4, ipv6 forwarding")
     setup_routing()
 
-    print("... optimizing interface buffers, txqueues")
+    print(".. optimizing interface buffers, txqueues")
     setup_routing()
 
-    print("=> Completed networking install")
+    print("=$ Completed networking install")
 
 
 def install_tcconfig():
-    print("=> Starting tcconfig install")
+    print("=^ Starting tcconfig install")
     subprocess.run(
         "sudo pip install tcconfig", shell=True, stdout=open(os.devnull, "wb")
     )
-    print("=> Completed tcconfig install")
+    print("=$ Completed tcconfig install")
 
 
 def install_debuff():
