@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from debuff.models.TcModel import TcSetValues
+from debuff.models.enums import InterfaceEnum
 from debuff.services.impairments import (
     delete_interface_impairments,
     set_interface_impairments,
@@ -28,7 +29,7 @@ router = APIRouter()
 
 
 @router.get("/show")
-async def tc_show(interface: str):
+async def tc_show(interface: InterfaceEnum):
     result = show_interface_impairments(interface)
     return result
 
@@ -58,6 +59,6 @@ async def tc_set(tcset_values: TcSetValues):
 
 
 @router.post("/delete")
-async def tc_delete(interface: str):
+async def tc_delete(interface: InterfaceEnum):
     result = delete_interface_impairments(interface)
     return result
