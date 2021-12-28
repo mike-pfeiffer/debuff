@@ -16,8 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from debuff.models.TcModel import TcSetValues
-from debuff.models.enums import InterfaceEnum
+from debuff.models.enums import InterfaceEnum, DirectionsEnum
 from debuff.services.impairments import (
     delete_interface_impairments,
     set_interface_impairments,
@@ -35,25 +34,24 @@ async def tc_show(interface: InterfaceEnum):
 
 
 @router.post("/set")
-async def tc_set(tcset_values: TcSetValues):
-    if tcset_values.direction == "bidirectional":
-        split_delay = tcset_values.delay / 2
-        split_jitter = tcset_values.jitter / 2
-        split_loss = tcset_values.loss / 2
+async def tc_set(
+    interface: InterfaceEnum, direction: DirectionsEnum,
+    delay: float = 0, jitter: float = 0, loss: float = 0
+):
+    if direction == "bidirectional":
+        split_delay = delay / 2
+        split_jitter = jitter / 2
+        split_loss = loss / 2
         set_interface_impairments(
-            tcset_values.interface, "outgoing", split_delay, split_jitter, split_loss
+            interface, "outgoing", split_delay, split_jitter, split_loss
         )
         set_interface_impairments(
-            tcset_values.interface, "incoming", split_delay, split_jitter, split_loss
+            interface, "incoming", split_delay, split_jitter, split_loss
         )
-        result = show_interface_impairments(tcset_values.interface)
+        result = show_interface_impairments(interface)
     else:
         result = set_interface_impairments(
-            tcset_values.interface,
-            tcset_values.direction,
-            tcset_values.delay,
-            tcset_values.jitter,
-            tcset_values.loss,
+            interface, direction, delay, jitter, loss
         )
     return result
 
