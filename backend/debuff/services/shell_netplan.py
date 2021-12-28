@@ -16,23 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import ast
-import json
 import yaml
-#from debuff.services.shared_utilities import build_details, error_handling
-from shared_utilities import build_details, error_handling
+from debuff.services.shared_utilities import build_details, error_handling
 
 VLANS = "vlans"
+BRIDGES = "bridges"
 ETHERNETS = "ethernets"
 COMMAND_OUTPUT = "command_output"
 
 
-def get_netplan(setting: str="all"):
+def get_netplan(setting: str = "all"):
     cmd_input = f"netplan get {setting}"
     cmd_output = error_handling(cmd_input)
     error_msg = None
     is_errored = False
-    
+
     if isinstance(cmd_output, Exception):
         error_msg = cmd_output
         cmd_output = None
@@ -45,23 +43,35 @@ def get_netplan(setting: str="all"):
     return details
 
 
-def get_netplan_interfaces() -> list:
-    netplan_interfaces = []
+def get_netplan_interfaces():
+    cmd_input = [
+        f"netplan get {VLANS}", f"netplan get {BRIDGES}", f"netplan get {ETHERNETS}"
+    ]
+    cmd_output = []
+    error_msg = None
+    is_errored = False
+
     netplan_vlans = get_netplan(VLANS)
     netplan_vlans = netplan_vlans[COMMAND_OUTPUT]
+
+    netplan_bridges = get_netplan(BRIDGES)
+    netplan_bridges = netplan_bridges[COMMAND_OUTPUT]
+
     netplan_ethernets = get_netplan(ETHERNETS)
     netplan_ethernets = netplan_ethernets[COMMAND_OUTPUT]
-   
+
     if netplan_vlans is not None:
         for vlan in netplan_vlans:
-            netplan_interfaces.append(vlan)
-    
-    if netplan_ethernets is not None: 
+            cmd_output.append(vlan)
+
+    if netplan_bridges is not None:
+        for bridge in netplan_bridges:
+            cmd_output.append(bridge)
+
+    if netplan_ethernets is not None:
         for ethernet in netplan_ethernets:
-            netplan_interfaces.append(ethernet)
+            cmd_output.append(ethernet)
 
-    return netplan_interfaces
+    details = build_details(cmd_input, cmd_output, error_msg, is_errored)
 
-if __name__ == '__main__':
-    print(get_netplan("ethernets.eno1.addresses"))
-    print(get_netplan_interfaces())
+    return details
