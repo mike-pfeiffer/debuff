@@ -18,27 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from debuff.models.enums import InterfaceEnum, InterfaceStateEnum
 from debuff.services.interfaces import (
-    set_interface_buffers,
     set_interface_state,
     show_all_interface_names,
-    show_interface_buffers,
     show_interface_details,
 )
 from fastapi import APIRouter
 
 router = APIRouter()
-
-
-@router.get("/details")
-async def get_interface_details(interface: InterfaceEnum):
-    result = show_interface_details(interface)
-    return result
-
-
-@router.get("/buffers")
-async def get_interface_buffers(interface: InterfaceEnum):
-    result = show_interface_buffers(interface)
-    return result
 
 
 @router.get("/names")
@@ -47,13 +33,13 @@ async def get_interface_names():
     return result
 
 
-@router.post("/state")
-async def post_interface_state(interface: InterfaceEnum, state: InterfaceStateEnum):
-    result = set_interface_state(interface, state)
+@router.get("/state")
+async def get_interface_state(interface: InterfaceEnum):
+    result = show_interface_details(interface)[interface]["operstate"]
     return result
 
 
-@router.post("/buffers")
-async def post_interface_buffers(interface: InterfaceEnum, rx_ring: int, tx_ring: int):
-    result = set_interface_buffers(interface, rx_ring, tx_ring)
+@router.post("/state")
+async def post_interface_state(interface: InterfaceEnum, state: InterfaceStateEnum):
+    result = set_interface_state(interface, state)
     return result
