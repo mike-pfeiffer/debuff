@@ -21,6 +21,7 @@ from debuff.services.shell_ethtool import show_ring_buffers, set_ring_buffers
 from debuff.services.shell_ip_link import ip_link_show_dev
 from debuff.services.shell_ip_link import ip_link_show_names
 from debuff.services.shell_ip_link import ip_link_set_state
+from debuff.services.shell_netplan import get_netplan_interfaces
 
 
 def show_interface_buffers(interface: str):
@@ -58,7 +59,7 @@ def show_interface_details(interface: str):
 def show_all_interface_names() -> list:
     """
     """
-    iface_names = ip_link_show_names()
+    iface_names = get_netplan_interfaces()
 
     if iface_names["is_errored"]:
         cmd_input = iface_names["command_input"]
