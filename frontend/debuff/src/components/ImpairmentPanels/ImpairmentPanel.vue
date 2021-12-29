@@ -23,10 +23,10 @@
 
 <script>
 import axios from "axios";
-import InterfaceImpairmentForm from "@/components/InterfacePanels/InterfaceImpairmentForm";
+import InterfaceImpairmentForm from "@/components/ImpairmentPanels/InterfaceImpairmentForm";
 
 export default {
-  name: "InterfacePanel",
+  name: "ImpairmentPanel",
   components: {InterfaceImpairmentForm},
   data () {
     return {
@@ -36,7 +36,7 @@ export default {
 
   created() {
     console.log("Yay!")
-    axios.get('http://192.168.200.10:8002/api/interfaces/names')
+    axios.get('http://127.0.0.1:8002/api/interfaces/names')
         .then(res => {
           const interfaces = []
           for (const x of res.data) {
@@ -44,10 +44,10 @@ export default {
               'name':"",
               'color':""
             }
-            axios.get('http://192.168.200.10:8002/api/interfaces/details?interface=' + x)
+            axios.get('http://127.0.0.1:8002/api/interfaces/state?interface=' + x)
                 .then(res => {
                   interface_data.name = x
-                  switch(res.data[x]['operstate']) {
+                  switch(res.data[x]) {
                     case "UP": {
                       interface_data.color = 'green';
                       break;
@@ -57,7 +57,7 @@ export default {
                       break;
                     }
                     default: {
-                      interface_data.color = 'gray';
+                      interface_data.color = 'grey';
                       break;
                     }
                   }

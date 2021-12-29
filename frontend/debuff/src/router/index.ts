@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import Interfaces from "@/views/Interfaces.vue";
+import Impairments from "@/views/Impairments.vue";
 import Home from "@/views/Home.vue";
 
 Vue.use(VueRouter);
@@ -12,9 +12,9 @@ const routes: Array<RouteConfig> = [
     component: Home,
   },
   {
-    path: "/interfaces",
-    name: "Interfaces",
-    component: Interfaces,
+    path: "/impairments",
+    name: "Impairments",
+    component: Impairments,
   },
 ];
 
