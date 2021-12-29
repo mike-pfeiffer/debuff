@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from debuff.models.enums import InterfaceEnum, InterfaceStateEnum
+from debuff.services.impairments import show_interface_impairments
 from debuff.services.interfaces import (
     set_interface_state,
     show_all_interface_names,
@@ -35,7 +36,11 @@ async def get_interface_names():
 
 @router.get("/state")
 async def get_interface_state(interface: InterfaceEnum):
-    result = show_interface_details(interface)[interface]["operstate"]
+    impaired_status = show_interface_impairments(interface)[interface]
+    if (impaired_status["outgoing"] or impaired_status["incoming"]):
+        result = "IMPAIRED"
+    else:
+        result = show_interface_details(interface)[interface]["operstate"]
     return result
 
 

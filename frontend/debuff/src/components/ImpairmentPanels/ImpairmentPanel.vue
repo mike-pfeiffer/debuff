@@ -60,6 +60,10 @@ export default {
                       interface_data.color = 'grey';
                       break;
                     }
+                    case "IMPAIRED": {
+                      interface_data.color = 'yellow';
+                      break;
+                    }
                     default: {
                       interface_data.color = 'black';
                       break;
