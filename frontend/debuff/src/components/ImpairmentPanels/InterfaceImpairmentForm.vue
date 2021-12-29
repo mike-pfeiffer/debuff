@@ -25,21 +25,21 @@
         <v-text-field
             v-model="delay"
             label="Delay"
-            hint="Current Values: Incoming: 10 | Outgoing: 10"
+            hint="Range Value: > 0 ms"
             persistent-hint
         ></v-text-field>
 
         <v-text-field
             v-model="jitter"
             label="Jitter"
-            hint="Current Value: 10"
+            hint="Range Value: > 0 ms"
             persistent-hint
         ></v-text-field>
 
         <v-text-field
             v-model="loss"
             label="Loss"
-            hint="Current Value: 10"
+            hint="Range Value: 100 >= x > 0 %"
             persistent-hint
         ></v-text-field>
         <v-divider class="mt-4"></v-divider>
@@ -48,7 +48,7 @@
               :disabled="!valid"
               color="success"
               class="mr-4"
-              @click="submit"
+              @click="sendPost()"
           >
             Submit
           </v-btn>
@@ -67,6 +67,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data: () => ({
     valid: true,
@@ -83,6 +85,20 @@ export default {
   }),
 
   methods: {
+    sendPost () {
+      axios
+        .post(
+            'http://192.168.5.2:8002/api/impairments/set' +
+            '?interface=enp2s0.201' +
+            '&direction=' + this.select.toLowerCase() +
+            '&delay=' + this.delay +
+            '&jitter=' + this.jitter +
+            '&loss=' + this.loss
+        )
+        .then(res => {
+          console.log(res.body);
+        });
+    },
     submit () {
       this.$refs.form.validate()
     },
