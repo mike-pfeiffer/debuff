@@ -36,7 +36,7 @@ export default {
 
   created() {
     console.log("Yay!")
-    axios.get('http://127.0.0.1:8002/api/interfaces/names')
+    axios.get('http://192.168.5.2:8002/api/interfaces/names')
         .then(res => {
           const interfaces = []
           for (const x of res.data) {
@@ -44,10 +44,10 @@ export default {
               'name':"",
               'color':""
             }
-            axios.get('http://127.0.0.1:8002/api/interfaces/state?interface=' + x)
+            axios.get('http://192.168.5.2:8002/api/interfaces/state?interface=' + x)
                 .then(res => {
                   interface_data.name = x
-                  switch(res.data[x]) {
+                  switch(res.data) {
                     case "UP": {
                       interface_data.color = 'green';
                       break;
@@ -56,8 +56,12 @@ export default {
                       interface_data.color = 'red';
                       break;
                     }
-                    default: {
+                    case "UNKNOWN": {
                       interface_data.color = 'grey';
+                      break;
+                    }
+                    default: {
+                      interface_data.color = 'black';
                       break;
                     }
                   }
