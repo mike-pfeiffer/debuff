@@ -70,6 +70,11 @@
 import axios from "axios";
 
 export default {
+  props: {
+    interface_name: {
+      type: String
+    }
+  },
   data: () => ({
     valid: true,
     name: "InterfaceImpairmentForm",
@@ -89,7 +94,7 @@ export default {
       axios
         .post(
             'http://192.168.5.2:8002/api/impairments/set' +
-            '?interface=enp2s0.201' +
+            '?interface=' + this.interface_name +
             '&direction=' + this.select.toLowerCase() +
             '&delay=' + this.delay +
             '&jitter=' + this.jitter +

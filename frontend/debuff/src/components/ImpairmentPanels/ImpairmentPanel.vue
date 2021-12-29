@@ -13,7 +13,7 @@
             </div>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
-            <InterfaceImpairmentForm />
+            <InterfaceImpairmentForm :interface_name=item.name />
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
