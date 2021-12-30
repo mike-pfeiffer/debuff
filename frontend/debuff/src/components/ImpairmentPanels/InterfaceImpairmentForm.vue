@@ -8,12 +8,9 @@
         tile
         >
         <v-card-title class="text-h5">
-          Show Impairment(s)
+          Show Impairment
         </v-card-title>
-          <v-card-text>
-            {{ impairmentStatus }}
-          </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="justify-center">
             <v-btn
                 :disabled="!valid"
                 color="success"
@@ -23,6 +20,9 @@
               Submit
             </v-btn>
           </v-card-actions>
+          <v-card-text>
+            {{ impairmentStatus }}
+          </v-card-text>
       </v-card>
 
       <v-card
@@ -31,7 +31,7 @@
         tile
         >
         <v-card-title class="text-h5">
-          Set Impairment(s)
+          Set Impairment
         </v-card-title>
         <v-form
             ref="form"
@@ -98,22 +98,36 @@
         tile
         >
         <v-card-title class="text-h5">
-          Delete Impairment(s)
+          Interface Controls 
         </v-card-title>
-          <v-card-text>
-          </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="justify-center">
             <v-btn
                 :disabled="!valid"
                 color="success"
                 class="mr-4"
                 @click="deleteImpairment()"
             >
-              Delete
+              Delete Impairment
+            </v-btn>
+            <v-btn
+                :disabled="!valid"
+                color="error"
+                class="mr-4"
+                @click="deleteImpairment()"
+            >
+              Shutdown Interface
+            </v-btn>
+            <v-btn
+                :disabled="!valid"
+                color="success"
+                class="mr-4"
+                @click="deleteImpairment()"
+            >
+              Enable Interface
             </v-btn>
           </v-card-actions>
       </v-card>
-
+    
     </v-layout>
   </v-container>
 </template>
@@ -164,7 +178,7 @@ export default {
           '?interface=' + this.interface_name
         )
         .then(
-          response => (this.impairmentStatus = response.data)
+          response => (this.impairmentStatus = response.data[this.interface_name])
         );
     },
     deleteImpairment () {
