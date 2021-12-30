@@ -1,6 +1,30 @@
 <template>
   <v-container class="my-5">
     <v-layout row wrap>
+
+      <v-card
+        class="mx-auto"
+        max-width="344"
+        tile
+        >
+        <v-card-title class="text-h5">
+          Status
+        </v-card-title>
+          <v-card-text>
+            {{ impairmentStatus }}
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+                :disabled="!valid"
+                color="success"
+                class="mr-4"
+                @click="sendGet()"
+            >
+              Submit
+            </v-btn>
+          </v-card-actions>
+      </v-card>
+
       <v-card
         class="mx-auto"
         max-width="344"
@@ -90,7 +114,8 @@ export default {
       'Bidirectional',
       'Incoming',
       'Outgoing',
-    ]
+    ],
+    impairmentStatus: ''
   }),
 
   methods: {
@@ -107,6 +132,16 @@ export default {
         .then(res => {
           console.log(res.body);
         });
+    },
+    sendGet () {
+      axios
+        .get(
+          'http://192.168.5.2:8002/api/impairments/show' +
+          '?interface=' + this.interface_name
+        )
+        .then(
+          response => (this.impairmentStatus = response.data)
+        );
     },
     submit () {
       this.$refs.form.validate()
