@@ -18,7 +18,7 @@
                 :disabled="!valid"
                 color="success"
                 class="mr-4"
-                @click="sendGet()"
+                @click="showImpairment()"
             >
               Submit
             </v-btn>
@@ -74,7 +74,7 @@
                   :disabled="!valid"
                   color="success"
                   class="mr-4"
-                  @click="sendPost()"
+                  @click="setImpairment()"
               >
                 Submit
               </v-btn>
@@ -90,6 +90,30 @@
           </v-card-text>
         </v-form>
       </v-card>
+
+
+      <v-card
+        class="mx-auto"
+        max-width="344"
+        tile
+        >
+        <v-card-title class="text-h5">
+          Delete Impairment
+        </v-card-title>
+          <v-card-text>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+                :disabled="!valid"
+                color="success"
+                class="mr-4"
+                @click="deleteImpairment()"
+            >
+              Delete
+            </v-btn>
+          </v-card-actions>
+      </v-card>
+
     </v-layout>
   </v-container>
 </template>
@@ -119,7 +143,7 @@ export default {
   }),
 
   methods: {
-    sendPost () {
+    setImpairment () {
       axios
         .post(
             'http://192.168.5.2:8002/api/impairments/set' +
@@ -133,7 +157,7 @@ export default {
           console.log(res.body);
         });
     },
-    sendGet () {
+    showImpairment () {
       axios
         .get(
           'http://192.168.5.2:8002/api/impairments/show' +
@@ -142,6 +166,16 @@ export default {
         .then(
           response => (this.impairmentStatus = response.data)
         );
+    },
+    deleteImpairment () {
+      axios
+        .post(
+          'http://192.168.5.2:8002/api/impairments/delete' +
+          '?interface=' + this.interface_name
+        )
+        .then(res => {
+          console.log(res.body);
+        });
     },
     submit () {
       this.$refs.form.validate()
