@@ -17,9 +17,9 @@
                 class="mr-4"
                 @click="showImpairment()"
             >
-              Submit
+              Show
             </v-btn>
-          </v-card-actions>
+        </v-card-actions>
           <v-card-text>
             {{ impairmentStatus }}
           </v-card-text>
@@ -109,19 +109,24 @@
             >
               Delete Impairment
             </v-btn>
+          </v-card-actions>
+          <v-card-actions class="justify-center">
             <v-btn
                 :disabled="!valid"
                 color="error"
                 class="mr-4"
-                @click="deleteImpairment()"
+                @click="shutdownInterface()"
             >
               Shutdown Interface
             </v-btn>
+          </v-card-actions>
+          </v-card-actions>
+          <v-card-actions class="justify-center">
             <v-btn
                 :disabled="!valid"
                 color="success"
                 class="mr-4"
-                @click="deleteImpairment()"
+                @click="enableInterface()"
             >
               Enable Interface
             </v-btn>
@@ -144,9 +149,9 @@ export default {
   data: () => ({
     valid: true,
     name: "InterfaceImpairmentForm",
-    delay: '',
-    jitter: '',
-    loss: '',
+    delay: 0,
+    jitter: 0,
+    loss: 0,
     select: null,
     items: [
       'Bidirectional',
@@ -186,6 +191,28 @@ export default {
         .post(
           'http://192.168.5.2:8002/api/impairments/delete' +
           '?interface=' + this.interface_name
+        )
+        .then(res => {
+          console.log(res.body);
+        });
+    },
+    shutdownInterface () {
+      axios
+        .post(
+          'http://192.168.5.2:8002/api/interfaces/state' +
+          '?interface=' + this.interface_name +
+          '&state=down'
+        )
+        .then(res => {
+          console.log(res.body);
+        });
+    },
+    enableInterface () {
+      axios
+        .post(
+          'http://192.168.5.2:8002/api/interfaces/state' +
+          '?interface=' + this.interface_name +
+          '&state=up'
         )
         .then(res => {
           console.log(res.body);
