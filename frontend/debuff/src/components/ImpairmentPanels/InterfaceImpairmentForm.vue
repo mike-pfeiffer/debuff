@@ -8,7 +8,7 @@
         tile
         >
         <v-card-title class="text-h5">
-          Status
+          Show Impairment(s)
         </v-card-title>
           <v-card-text>
             {{ impairmentStatus }}
@@ -31,7 +31,7 @@
         tile
         >
         <v-card-title class="text-h5">
-          Impairments
+          Set Impairment(s)
         </v-card-title>
         <v-form
             ref="form"
@@ -98,7 +98,7 @@
         tile
         >
         <v-card-title class="text-h5">
-          Delete Impairment
+          Delete Impairment(s)
         </v-card-title>
           <v-card-text>
           </v-card-text>
