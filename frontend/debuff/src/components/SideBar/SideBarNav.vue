@@ -15,12 +15,6 @@
       >
         <v-list-item link to="/">
           <v-list-item-icon>
-            <v-icon style="color: white">fas fa-home</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title style="color: white" >Home</v-list-item-title>
-        </v-list-item>
-        <v-list-item link to="/impairments">
-          <v-list-item-icon>
             <v-icon style="color: white">fas fa-arrow-alt-circle-down</v-icon>
           </v-list-item-icon>
           <v-list-item-title style="color: white">Impairments</v-list-item-title>
