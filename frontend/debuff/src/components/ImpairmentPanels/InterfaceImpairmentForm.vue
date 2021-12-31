@@ -93,7 +93,9 @@
             Impairment Status
           </v-card-title>
             <v-card-text>
-              {{ impairmentStatus }}
+              <pre>
+                {{ JSON.stringify(impairmentStatus, null, 2) }}
+              </pre>
             </v-card-text>
             <v-card-actions class="justify-center">
               <v-btn
