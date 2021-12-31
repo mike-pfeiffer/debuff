@@ -1,139 +1,170 @@
 <template>
-  <v-container class="my-5">
-    <v-layout row wrap>
+  <v-container class="grey lighten-5">
+    <v-row
+      class="mb-6"
+      justify="center"
+    >
+     
+      <v-spacer></v-spacer>
 
-      <v-card
-        class="mx-auto"
-        max-width="344"
-        tile
-        >
-        <v-card-title class="text-h5">
-          Show Impairment
-        </v-card-title>
-          <v-card-actions class="justify-center">
-            <v-btn
-                :disabled="!valid"
-                color="success"
-                class="mr-4"
-                @click="showImpairment()"
-            >
-              Show
-            </v-btn>
-        </v-card-actions>
-          <v-card-text>
-            {{ impairmentStatus }}
-          </v-card-text>
-      </v-card>
+      <v-column
+        offset-lg="5"      
+      >
+        <v-card
+          class="mx-auto"
+          min-height="400"
+          min-width="300"
+          max-width="344"
+          >
+          <v-card-title class="text-h5">
+            Set Impairment
+          </v-card-title>
+          <v-form
+              ref="form"
+              v-model="valid"
+              lazy-validation
+          >
+            <v-card-text>
 
-      <v-card
-        class="mx-auto"
-        max-width="344"
-        tile
-        >
-        <v-card-title class="text-h5">
-          Set Impairment
-        </v-card-title>
-        <v-form
-            ref="form"
-            v-model="valid"
-            lazy-validation
-        >
-          <v-card-text>
+              <v-select
+                  v-model="select"
+                  :items="items"
+                  :rules="[v => !!v || 'Item is required']"
+                  label="Direction"
+                  required
+              ></v-select>
 
-            <v-select
-                v-model="select"
-                :items="items"
-                :rules="[v => !!v || 'Item is required']"
-                label="Direction"
-                required
-            ></v-select>
+              <v-text-field
+                  v-model="delay"
+                  label="Delay"
+                  hint="Range Value: > 0 ms"
+                  persistent-hint
+              ></v-text-field>
 
-            <v-text-field
-                v-model="delay"
-                label="Delay"
-                hint="Range Value: > 0 ms"
-                persistent-hint
-            ></v-text-field>
+              <v-text-field
+                  v-model="jitter"
+                  label="Jitter"
+                  hint="Range Value: > 0 ms"
+                  persistent-hint
+              ></v-text-field>
 
-            <v-text-field
-                v-model="jitter"
-                label="Jitter"
-                hint="Range Value: > 0 ms"
-                persistent-hint
-            ></v-text-field>
-
-            <v-text-field
-                v-model="loss"
-                label="Loss"
-                hint="Range Value: 100 >= x > 0 %"
-                persistent-hint
-            ></v-text-field>
-            <v-divider class="mt-4"></v-divider>
-            <v-card-actions>
+              <v-text-field
+                  v-model="loss"
+                  label="Loss"
+                  hint="Range Value: 100 >= x > 0 %"
+                  persistent-hint
+              ></v-text-field>
+              <v-divider class="mt-4"></v-divider>
+              <v-card-actions>
+                <v-btn
+                    :disabled="!valid"
+                    color="success"
+                    class="mr-4"
+                    @click="setImpairment()"
+                >
+                  Submit
+                </v-btn>
+                <v-spacer></v-spacer>
+                <v-btn
+                    color="error"
+                    class="mr-4"
+                    @click="reset"
+                >
+                  Reset
+                </v-btn>
+              </v-card-actions>
+            </v-card-text>
+          </v-form>
+        </v-card>
+      </v-column>
+     
+      <v-spacer></v-spacer>
+      
+      <v-column
+      
+      >
+        <v-card
+          class="mx-auto"
+          min-height="400"
+          min-width="300"
+          max-width="344"
+          >
+          <v-card-title class="text-h5">
+            Show Impairment
+          </v-card-title>
+            <v-card-text>
+              {{ impairmentStatus }}
+            </v-card-text>
+            <v-card-actions class="justify-center">
               <v-btn
                   :disabled="!valid"
                   color="success"
                   class="mr-4"
-                  @click="setImpairment()"
+                  @click="showImpairment()"
               >
-                Submit
-              </v-btn>
-              <v-spacer></v-spacer>
-              <v-btn
-                  color="error"
-                  class="mr-4"
-                  @click="reset"
-              >
-                Reset
+                Show
               </v-btn>
             </v-card-actions>
-          </v-card-text>
-        </v-form>
-      </v-card>
+        </v-card>
+      </v-column>
+     
+      <v-spacer></v-spacer>
 
+    </v-row>
 
-      <v-card
-        class="mx-auto"
-        max-width="344"
-        tile
+    <v-row
+      class="mb-6"
+      justify="center"
+    >
+      
+      <v-spacer></v-spacer>
+
+      <v-column
+      
+      >
+        <v-btn
+            :disabled="!valid"
+            color="success"
+            class="mr-4"
+            @click="deleteImpairment()"
         >
-        <v-card-title class="text-h5">
-          Interface Controls 
-        </v-card-title>
-          <v-card-actions class="justify-center">
-            <v-btn
-                :disabled="!valid"
-                color="success"
-                class="mr-4"
-                @click="deleteImpairment()"
-            >
-              Delete Impairment
-            </v-btn>
-          </v-card-actions>
-          <v-card-actions class="justify-center">
-            <v-btn
-                :disabled="!valid"
-                color="error"
-                class="mr-4"
-                @click="shutdownInterface()"
-            >
-              Shutdown Interface
-            </v-btn>
-          </v-card-actions>
-          </v-card-actions>
-          <v-card-actions class="justify-center">
-            <v-btn
-                :disabled="!valid"
-                color="success"
-                class="mr-4"
-                @click="enableInterface()"
-            >
-              Enable Interface
-            </v-btn>
-          </v-card-actions>
-      </v-card>
-    
-    </v-layout>
+          Delete Impairment
+        </v-btn>
+      </v-column>
+     
+      <v-spacer></v-spacer>
+      
+      <v-column
+      
+      >
+        <v-btn
+            :disabled="!valid"
+            color="error"
+            class="mr-4"
+            @click="shutdownInterface()"
+        >
+          Shutdown Interface
+        </v-btn>
+      </v-column>
+     
+      <v-spacer></v-spacer>
+      
+      <v-column
+      
+      >
+        <v-btn
+            :disabled="!valid"
+            color="success"
+            class="mr-4"
+            @click="enableInterface()"
+        >
+          Enable Interface
+        </v-btn>
+      </v-column>
+     
+      <v-spacer></v-spacer>
+      
+    </v-row>
   </v-container>
 </template>
 
