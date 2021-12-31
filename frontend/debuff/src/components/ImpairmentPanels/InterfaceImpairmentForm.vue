@@ -4,11 +4,11 @@
       class="mb-6"
       justify="center"
     >
-     
+
       <v-spacer></v-spacer>
 
       <v-column
-        offset-lg="5"      
+        offset-lg="5"
       >
         <v-card
           class="mx-auto"
@@ -77,11 +77,11 @@
           </v-form>
         </v-card>
       </v-column>
-     
+
       <v-spacer></v-spacer>
-      
+
       <v-column
-      
+
       >
         <v-card
           class="mx-auto"
@@ -90,7 +90,7 @@
           max-width="344"
           >
           <v-card-title class="text-h5">
-            Show Impairment
+            Impairment Status
           </v-card-title>
             <v-card-text>
               {{ impairmentStatus }}
@@ -107,7 +107,37 @@
             </v-card-actions>
         </v-card>
       </v-column>
-     
+
+      <v-spacer></v-spacer>
+
+      <v-column
+
+      >
+        <v-card
+          class="mx-auto"
+          min-height="400"
+          min-width="300"
+          max-width="344"
+          >
+          <v-card-title class="text-h5">
+            Interface Status
+          </v-card-title>
+            <v-card-text>
+              {{ interfaceStatus }}
+            </v-card-text>
+            <v-card-actions class="justify-center">
+              <v-btn
+                  :disabled="!valid"
+                  color="success"
+                  class="mr-4"
+                  @click="showInterface()"
+              >
+                Show
+              </v-btn>
+            </v-card-actions>
+        </v-card>
+      </v-column>
+
       <v-spacer></v-spacer>
 
     </v-row>
@@ -116,11 +146,11 @@
       class="mb-6"
       justify="center"
     >
-      
+
       <v-spacer></v-spacer>
 
       <v-column
-      
+
       >
         <v-btn
             :disabled="!valid"
@@ -131,11 +161,11 @@
           Delete Impairment
         </v-btn>
       </v-column>
-     
+
       <v-spacer></v-spacer>
-      
+
       <v-column
-      
+
       >
         <v-btn
             :disabled="!valid"
@@ -146,11 +176,11 @@
           Shutdown Interface
         </v-btn>
       </v-column>
-     
+
       <v-spacer></v-spacer>
-      
+
       <v-column
-      
+
       >
         <v-btn
             :disabled="!valid"
@@ -161,9 +191,9 @@
           Enable Interface
         </v-btn>
       </v-column>
-     
+
       <v-spacer></v-spacer>
-      
+
     </v-row>
   </v-container>
 </template>
@@ -189,7 +219,8 @@ export default {
       'Incoming',
       'Outgoing',
     ],
-    impairmentStatus: ''
+    impairmentStatus: '',
+    interfaceStatus: ''
   }),
 
   methods: {
@@ -248,6 +279,16 @@ export default {
         .then(res => {
           console.log(res.body);
         });
+    },
+    showInterface () {
+      axios
+        .get(
+          'http://192.168.5.2:8002/api/interfaces/state' +
+          '?interface=' + this.interface_name
+        )
+        .then(
+          response => (this.interfaceStatus = response.data)
+        );
     },
     submit () {
       this.$refs.form.validate()
