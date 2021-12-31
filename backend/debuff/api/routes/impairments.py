@@ -36,22 +36,23 @@ async def tc_show(interface: InterfaceEnum):
 @router.post("/set")
 async def tc_set(
     interface: InterfaceEnum, direction: DirectionsEnum,
-    delay: float = 0, jitter: float = 0, loss: float = 0
+    delay: float = 0, jitter: float = 0, loss: float = 0,
+    rate: float = 1000
 ):
     if direction == "bidirectional":
         split_delay = delay / 2
         split_jitter = jitter / 2
         split_loss = loss / 2
         set_interface_impairments(
-            interface, "outgoing", split_delay, split_jitter, split_loss
+            interface, "outgoing", split_delay, split_jitter, split_loss, rate
         )
         set_interface_impairments(
-            interface, "incoming", split_delay, split_jitter, split_loss
+            interface, "incoming", split_delay, split_jitter, split_loss, rate
         )
         result = show_interface_impairments(interface)
     else:
         result = set_interface_impairments(
-            interface, direction, delay, jitter, loss
+            interface, direction, delay, jitter, loss, rate
         )
     return result
 

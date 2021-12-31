@@ -37,14 +37,14 @@
               <v-text-field
                   v-model="delay"
                   label="Delay"
-                  hint="Range Value: > 0 ms"
+                  hint="Range Value:x > 0 ms"
                   persistent-hint
               ></v-text-field>
 
               <v-text-field
                   v-model="jitter"
                   label="Jitter"
-                  hint="Range Value: > 0 ms"
+                  hint="Range Value:x > 0 ms"
                   persistent-hint
               ></v-text-field>
 
@@ -54,7 +54,15 @@
                   hint="Range Value: 100 >= x > 0 %"
                   persistent-hint
               ></v-text-field>
-              <v-divider class="mt-4"></v-divider>
+              
+              <v-text-field
+                  v-model="rate"
+                  label="Rate"
+                  hint="Range Value: x > 0 Mbps"
+                  persistent-hint
+              ></v-text-field>
+             
+               <v-divider class="mt-4"></v-divider>
               <v-card-actions>
                 <v-btn
                     :disabled="!valid"
@@ -215,6 +223,7 @@ export default {
     delay: 0,
     jitter: 0,
     loss: 0,
+    rate: 1000,
     select: null,
     items: [
       'Bidirectional',
@@ -234,7 +243,8 @@ export default {
             '&direction=' + this.select.toLowerCase() +
             '&delay=' + this.delay +
             '&jitter=' + this.jitter +
-            '&loss=' + this.loss
+            '&loss=' + this.loss +
+            '&rate=' + this.rate
         )
         .then(res => {
           console.log(res.body);

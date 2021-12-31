@@ -58,10 +58,13 @@ def tcdel(interface: str):
     return details
 
 
-def tcset(interface: str, direction: str, delay: float, jitter: float, loss: float):
+def tcset(
+    interface: str, direction: str, delay: float, jitter: float, loss:
+    float, rate: float
+):
     cmd_input = (
         f"tcset {interface} --direction {direction} --delay {delay}ms "
-        f"--delay-distro {jitter}ms --loss {loss}"
+        f"--delay-distro {jitter}ms --loss {loss} --rate {rate}Mbps"
     )
     cmd_output = error_handling(cmd_input)
     error_msg = None
